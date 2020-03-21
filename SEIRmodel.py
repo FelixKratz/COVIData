@@ -47,7 +47,7 @@ if __name__ == "__main__" :
                     'mu': 0,      # The natural mortality rate (this is unrelated to disease). This models a population of a constant size,
                     'nu': 0,      # Ich glaube Immunrate. Wie viele Leute von sich aus Immun sind gegen COVID19
                     'dt': 0.1,
-                    'S0': 30,
+                    'S0': 82e6,
                     'E0': 0,
                     'I0': 1,
                     'Re0': 0,
