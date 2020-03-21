@@ -22,7 +22,7 @@ def fitParamsToModel(reality, initialGuess, parametersToFit):
     DX = 1e-3
 
     initialModel = SEIRModel(initialGuess)
-    initialSim = initialModel.compute(steps=len(reality))['I'].to_numpy()
+    initialSim = initialModel.compute(steps=len(reality))['D'].to_numpy()
     F = squareErrorByElement(initialSim, reality)
     jacobian = np.zeros((len(parametersToFit), len(reality)))
 
@@ -33,7 +33,7 @@ def fitParamsToModel(reality, initialGuess, parametersToFit):
             displacement = initialGuess
             displacement[p] += DX * j
             displacedModel = SEIRModel(displacement)
-            displacedSimulation = displacedModel.compute(steps=len(reality))['I'].to_numpy()
+            displacedSimulation = displacedModel.compute(steps=len(reality))['D'].to_numpy()
             error[(j + 1) // 2] = squareErrorByElement(displacedSimulation, reality)
         jacobian[i] = (error[0] - error[1]) / (2* DX)
         i+=1
@@ -46,7 +46,7 @@ def fitParamsToModel(reality, initialGuess, parametersToFit):
         i += 1
 
     finalModel = SEIRModel(initialGuess)
-    finalSim = finalModel.compute(steps=len(reality))['I'].to_numpy()
+    finalSim = finalModel.compute(steps=len(reality))['D'].to_numpy()
     finalError = absoluteSquareError(finalSim, reality)
     print("Error: ", finalError)
     if not finalError < 1e-3:
