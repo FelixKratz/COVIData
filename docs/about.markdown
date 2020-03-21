@@ -23,3 +23,13 @@ Mitwirkende/ Contributors:
   </li>
 {% endfor %}
 </ul>
+
+Was "flatten the curve" bedeutet ist in folgendem Comic ganz gut dargestellt (aus der 
+englischen [Wikipedia](https://en.wikipedia.org/wiki/Coronavirus_disease_2019) zu COVID19).
+
+<a title="Siouxsie Wiles and Toby Morris / CC BY-SA (https://creativecommons.org/licenses/by-sa/4.0)"
+    href="https://commons.wikimedia.org/wiki/File:Covid-19-curves-graphic-social-v3.gif">
+    <img width="512"
+    alt="Covid-19-curves-graphic-social-v3"
+    src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Covid-19-curves-graphic-social-v3.gif/512px-Covid-19-curves-graphic-social-v3.gif">
+</a>
