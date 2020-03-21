@@ -45,10 +45,10 @@ class Visualizer:
                                     "right": edges[1:]}) #dataframe hist for bokeh
             src = ColumnDataSource(hist_df)
             tooltips=[
-            ('Cases', '@data'),
+            ('Cases', '$y_data'),
             ('Date', '@date'),
             ]
-            fig.vbar(x=hist_df["time"], bottom=0, top=hist_df["data"], color="Blue", width=0.99, legend_label="cases per day")
+            fig.vbar(x=hist_df["time"], bottom=0, top=hist_df["data"], color="Red", width=0.99, legend_label="cases per day", line_width=0.1)
             fig.add_tools(HoverTool(tooltips=tooltips))
             if not os.path.exists("docs/_includes/plots/{}/".format(country)):
                  os.makedirs("docs/_includes/plots/{}/".format(country))
