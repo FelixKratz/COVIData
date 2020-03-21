@@ -5,4 +5,4 @@ permalink: /about/
 ---
 
 We're a small team from Germany contributing
-to the wirvsvirus hackathon.
+to the [wirvsvirus](https://wirvsvirushackathon.org/) hackathon.
