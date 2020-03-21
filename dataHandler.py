@@ -15,11 +15,10 @@ class DataHandler:
 
     def filterForCountry(self, country):
         filteredData = {'confirmed': [], 'deaths': [], 'recovered': []}
-
-        for type in ["confirmed", "deaths", "recovered"]:
-            typeData = self.data[type]
+        for type_ in ["confirmed", "deaths", "recovered"]:
+            typeData = self.data[type_]
             tmp = typeData[typeData["Country/Region"] == country]
             tmp.drop(tmp.columns[[0,1,2,3,4]], axis=1, inplace=True)
-            filteredData[type] = tmp.to_numpy()
+            filteredData[type_] = tmp.to_numpy()
 
         return filteredData
