@@ -19,13 +19,10 @@
 # in the templates via {{ site.myvariable }}.
 
 title: COVIData
-email: felix.kratz@tu-dortmund.de
 description: >- # this means to ignore newlines until "baseurl:"
-  Prediction of the curve flattening.
+  Prediction of the curve flattening in Germany.
 baseurl: "/COVIData" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
-github_username:  FelixKratz
-
 # Build settings
 theme: minima
 plugins:
