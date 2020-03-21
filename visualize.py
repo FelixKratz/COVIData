@@ -53,11 +53,10 @@ class Visualizer:
         save(tabs)
         
         #folgender Code ist so dirty, da hilt noch nciht mal 30 sec. Händewaschen...
-        with open('docs/_includes/plots/{}/all_caseshtm.html'.format(country)) as f:
-            w_o_doctype = f.read().replace('<!DOCTYPE html>', '')
-
-        with open('docs/_includes/plots/{}/all_caseshtm.html'.format(country), "w") as f:
-            f.write(w_o_doctype)
+        with open('docs/_includes/plots/{}/all_caseshtm.html'.format(country)) as f_in:
+            w_o_doctype = f_in.read().splitlines(True)
+        with open('docs/_includes/plots/{}/all_caseshtm.html'.format(country), "w") as f_out:
+            f_out.writelines(w_o_doctype[5:])
 
 
 
