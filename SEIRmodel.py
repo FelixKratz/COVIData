@@ -1,38 +1,39 @@
-import numpy as np 
+import numpy as np
 import pandas as pd
 
-#Tinf und Tinc in days !!!
-def model(params):
-    R0 = params[0]
-    Rt = params[1]
-    Tinf = params[2]
-    Tinc = params[3]
-    dt = 0.001
-    days = 10
-    S0 = 83000000 # population (83mio)
-    E0 = 0 # exposed
-    I0 = 1 # intial infections
-    Re0 = 0 # removed
-    series = pd.DataFrame({"S":[S0],"E":[E0],"I":[I0],"R":[Re0]})
-    actual = pd.DataFrame({"S":[S0],"E":[E0],"I":[I0],"R":[Re0]})
-    for i in range(days):
-        S = actual.S - R0/Tinf*actual.I*actual.S*dt
-        E = actual.E + R0/Tinf*actual.I*actual.S*dt - 1/Tinc*actual.E*dt
-        I = actual.I + 1/Tinc*actual.E*dt - 1/Tinf*actual.I*dt
-        R = actual.R + 1/Tinf*actual.I*dt
-        if S.values<1:
-            S = 0
-        if E.values<1:
-            E = 0
-        if I.values<1:
-            I = 0
-        if R.values<1:
-            R = 0 
-        actual = pd.DataFrame({"S":S,"E":E,"I":I,"R":R})
-        series = series.append(actual)
-    print(series)
-    return series
+class SEIRModel:
+    def __init__(self, params):
+        self.params = params
 
+    def compute(self, steps):
+        series = pd.DataFrame({"S":[self.params['S0']],"E":[self.params['E0']],"I":[self.params['I0']],"R":[self.params['Re0']]})
+        actual = pd.DataFrame({"S":[self.params['S0']],"E":[self.params['E0']],"I":[self.params['I0']],"R":[self.params['Re0']]})
+        for _ in range(steps):
+            S = actual.S - self.params['R0']/self.params['Tinf']*actual.I*actual.S*self.params['dt']
+            E = actual.E + self.params['R0']/self.params['Tinf']*actual.I*actual.S*self.params['dt'] - 1/self.params['Tinc']*actual.E*self.params['dt']
+            I = actual.I + 1/self.params['Tinc']*actual.E*self.params['dt'] - 1/self.params['Tinf']*actual.I*self.params['dt']
+            R = actual.R + 1/self.params['Tinf']*actual.I*self.params['dt']
+            if S.values < 1:
+                S = 0
+            if E.values < 1:
+                E = 0
+            if I.values < 1:
+                I = 0
+            if R.values < 1:
+                R = 0
+            actual = pd.DataFrame({"S":S,"E":E,"I":I,"R":R})
+            series = series.append(actual)
+        return series
 
-ser = model([2.2,2.2,3.,5.,1.])
-ser.I.plot()
+model = SEIRModel({'R0': 2.2,
+                   'Rt': 2.2,
+                   'Tinf': 3.0,
+                   'Tinc': 5.0,
+                   'dt': 0.001,
+                   'S0': 83e6,
+                   'E0': 0,
+                   'I0': 1,
+                   'Re0': 0})
+
+prediction = model.compute(steps=10)
+print(prediction)

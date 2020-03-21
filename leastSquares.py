@@ -1,4 +1,5 @@
 import numpy as np
+from SEIRmodel import SEIRModel
 
 def absoluteSquareError(simulation, reality):
     simulation = np.array(simulation)
@@ -8,3 +9,7 @@ def absoluteSquareError(simulation, reality):
         print("Error: Non matching input dimensions in absoluteSquareError()!")
 
     return sum((simulation - reality)**2)
+
+def fitParamsToModel(reality, initialGuess, paramsToFit):
+    model = SEIRModel(initialGuess)
+    simulation = model.compute(steps=len(reality))
