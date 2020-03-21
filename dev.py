@@ -3,4 +3,5 @@ from dataHandler import DataHandler
 dataHandler = DataHandler()
 dataHandler.loadData()
 
-print(dataHandler.data['confirmed'])
+germanData = dataHandler.filterForCountry("Germany")
+print(germanData)
