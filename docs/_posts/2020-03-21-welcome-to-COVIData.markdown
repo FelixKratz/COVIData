@@ -5,6 +5,7 @@ date:   2020-03-21 14:04:03 +0100
 categories: graphik 
 ---
 
-Hier könnte ihr Text stehen.
+So sehen prinzipiell die Plots aus, die 
+mit [bokeh](https://bokeh.org/) erstellt wurden.
 
 {% include testplot.html %}
