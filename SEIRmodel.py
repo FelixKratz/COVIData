@@ -23,7 +23,7 @@ class SEIRModel:
             if R.values < 0:
                 R = 0
             self.series = self.series.append(pd.DataFrame({"S":S,"E":E,"I":I,"R":R,"N":S+E+I+R,"D":I*self.params['darkrate']}),ignore_index=True)
-        return self.series
+        return self.series.iloc[1:,:]
 
     def reset(self):
         # resets the series
@@ -51,7 +51,7 @@ if __name__ == "__main__" :
                     'E0': 0,
                     'I0': 1,
                     'Re0': 0,
-                    'darkrate': 0.05  # Quelle: An der Heiden M, Buchholz U, Buda S. Estimation of influenza- and respiratory syncytial virus-attributable medically attended acute respiratory infections in Germany, 2010/11-2017/18. Influenza Other Respir Viruses. 2019.
+                    'darkrate': 0.05 # erstmal China studie # Quelle: An der Heiden M, Buchholz U, Buda S. Estimation of influenza- and respiratory syncytial virus-attributable medically attended acute respiratory infections in Germany, 2010/11-2017/18. Influenza Other Respir Viruses. 2019.
                     })
 
     prediction = model.compute(steps=150)
