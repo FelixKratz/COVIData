@@ -9,6 +9,11 @@ def lin(x):
 
 
 x = np.linspace(0, 10)
+
+
+
+
+
 hover = HoverTool(tooltips=[
     ("Sepal length", "@sepal_length"),
     ("Sepal width", "@sepal_width"),
@@ -27,3 +32,7 @@ p.line(x, lin(x), legend_label="blup", line_width=2)
 output_file('docs/plots/testplot.html')
 
 
+#class Visualizer:
+#    def __init__(self, data):
+#        self.data=data
+#    def visualize(self, data)
