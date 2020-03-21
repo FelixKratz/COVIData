@@ -19,7 +19,7 @@ def squareErrorByElement(simulation, reality):
     return (simulation - reality)**2
 
 def fitParamsToModel(reality, initialGuess, parametersToFit):
-    DX = 1e-3
+    DX = 1e-2
 
     initialModel = SEIRModel(initialGuess)
     initialSim = initialModel.compute(steps=len(reality))['D'].to_numpy()
@@ -38,7 +38,7 @@ def fitParamsToModel(reality, initialGuess, parametersToFit):
         jacobian[i] = (error[0] - error[1]) / (2* DX)
         i+=1
 
-    dX = - np.array(np.linalg.lstsq(jacobian, -F)[0])
+    dX = - np.array(np.linalg.lstsq(jacobian.T, -F)[0])
 
     i = 0
     for p in parametersToFit:
@@ -49,5 +49,7 @@ def fitParamsToModel(reality, initialGuess, parametersToFit):
     finalSim = finalModel.compute(steps=len(reality))['D'].to_numpy()
     finalError = absoluteSquareError(finalSim, reality)
     print("Error: ", finalError)
-    if not finalError < 1e-3:
+    if not finalError < 1e-8:
         fitParamsToModel(reality, initialGuess, parametersToFit)
+    else:
+        print("Final Params: ", initialGuess)
