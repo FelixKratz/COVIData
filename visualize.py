@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 import os
-from bokeh.io import output_file, output_notebook
+from bokeh.io import output_file
+from bokeh.embed import components
 from bokeh.plotting import figure, show, save
 from bokeh.models import ColumnDataSource
 from bokeh.layouts import row, column, gridplot
@@ -25,8 +26,7 @@ class Visualizer:
     def visualize_tabs(self, country):
         self.ind_start_infection = np.argmax(dataHandler.filterForCountry(country)["confirmed"])
         pannels=[]    
-        output_file(
-            'docs/_includes/plots/{}/all_cases.html'.format(country), title="CORINNA 17- Cases Germany")
+        #output_file('docs/_includes/plots/{}/all_cases.html'.format(country), title="CORINNA 17- Cases Germany")
         for item in ["confirmed", "deaths", "recovered"]:
 
             fig = figure(title="", plot_height=500, plot_width=500,
@@ -50,7 +50,9 @@ class Visualizer:
 
             pannels.append(Panel(child=fig, title="{}".format(item)))
         tabs=Tabs(tabs=pannels)
-        save(tabs)    
+        script,div=components(tabs)    
+        with open('docs/_includes/plots/{}/all_cases.html'.format(country), 'w') as f:
+            f.write(script)
 
 
 
