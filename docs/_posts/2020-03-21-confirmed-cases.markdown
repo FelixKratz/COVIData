@@ -8,3 +8,4 @@ categories: graphics confirmed
 Bestätigte Fälle in Deutschland
 
 {% include plots/Germany/confirmed_cases.html %}
+
