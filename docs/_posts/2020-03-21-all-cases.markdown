@@ -8,4 +8,5 @@ categories: graphics recovered
 
 
 {% include plots/Germany/all_cases.html %}
+{% include plots/Germany/all_caseshtm.html %}
 

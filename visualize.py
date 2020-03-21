@@ -53,15 +53,15 @@ class Visualizer:
         save(tabs)
         script,div=components(tabs)    
         with open('docs/_includes/plots/{}/all_cases.html'.format(country), 'w') as f:
-            f.write('<html lang="en">')
-            f.write("<head >")
-            f.write('< meta charset="utf-8" >')
-            f.write("< title >CORINNA 17- Cases {}< /title >".format(country))
+            f.write('<html lang="en">\n')
+            f.write("<head>\n")
+            f.write('<meta charset="utf-8">\n')
+            f.write("<title >CORINNA 17- Cases {}</title>\n".format(country))
             f.write(script)
-            f.write('< /head >')
-            f.write('< body >')
+            f.write('</head> \n')
+            f.write('<body>\n')
             f.write(div)
-            f.write('</body>')
+            f.write('</body>\n')
             f.write('</html>')
 
 
