@@ -4,7 +4,7 @@ import pandas as pd
 class SEIRModel:
     def __init__(self, params):
         self.params = params
-        self.series = pd.DataFrame({"S":[self.params['S0']],"E":[self.params['E0']],"I":[self.params['I0']],"R":[self.params['Re0']],"N":[self.params['S0']+self.params['E0']+self.params['I0']+self.params['Re0']]})
+        self.series = pd.DataFrame({"S":[self.params['S0']],"E":[self.params['E0']],"I":[self.params['I0']],"R":[self.params['Re0']],"N":[self.params['S0']+self.params['E0']+self.params['I0']+self.params['Re0']],"D":[self.params["I0"]*self.params["darkrate"]]})
 
     def compute(self, steps):
         #calculates the next $steps$ steps and gives back the whole series
@@ -22,16 +22,16 @@ class SEIRModel:
                 I = 0
             if R.values < 0:
                 R = 0
-            self.series = self.series.append(pd.DataFrame({"S":S,"E":E,"I":I,"R":R,"N":S+E+I+R}),ignore_index=True)
+            self.series = self.series.append(pd.DataFrame({"S":S,"E":E,"I":I,"R":R,"N":S+E+I+R,"D":I*self.params['darkrate']}),ignore_index=True)
         return self.series
 
     def reset(self):
         # resets the series
-        self.series =  pd.DataFrame({"S":[self.params['S0']],"E":[self.params['E0']],"I":[self.params['I0']],"R":[self.params['Re0']],"N":[self.params['S0']+self.params['E0']+self.params['I0']+self.params['Re0']]})
+        self.series =  pd.DataFrame({"S":[self.params['S0']],"E":[self.params['E0']],"I":[self.params['I0']],"R":[self.params['Re0']],"N":[self.params['S0']+self.params['E0']+self.params['I0']+self.params['Re0']],"D":[self.params["I0"]*self.params["darkrate"]]})
 
     def get_daily_numbers(self):
         steps_per_day = 1/self.params["dt"]
-        data = pd.DataFrame({"S":[self.params['S0']],"E":[self.params['E0']],"I":[self.params['I0']],"R":[self.params['Re0']],"N":[self.params['S0']+self.params['E0']+self.params['I0']+self.params['Re0']]})
+        data = pd.DataFrame({"S":[self.params['S0']],"E":[self.params['E0']],"I":[self.params['I0']],"R":[self.params['Re0']],"N":[self.params['S0']+self.params['E0']+self.params['I0']+self.params['Re0']],"D":[self.params["I0"]*self.params["darkrate"]]})
         i = round(steps_per_day)
         while i < self.series.shape[0]:
             data = data.append(self.series.iloc[i,:],ignore_index=True)
@@ -50,7 +50,9 @@ if __name__ == "__main__" :
                     'S0': 30,
                     'E0': 0,
                     'I0': 1,
-                    'Re0': 0})
+                    'Re0': 0,
+                    'darkrate': 0.05  # Quelle: An der Heiden M, Buchholz U, Buda S. Estimation of influenza- and respiratory syncytial virus-attributable medically attended acute respiratory infections in Germany, 2010/11-2017/18. Influenza Other Respir Viruses. 2019.
+                    })
 
     prediction = model.compute(steps=150)
     pred = model.compute(steps=20)
