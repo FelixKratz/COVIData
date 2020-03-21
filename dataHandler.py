@@ -18,8 +18,8 @@ class DataHandler:
 
         for type in ["confirmed", "deaths", "recovered"]:
             typeData = self.data[type]
-            filteredData[type] = typeData[typeData["Country/Region"] == country]
-            filteredData[type].drop(filteredData[type].columns[[0,1,2,3,4]], axis=1, inplace=True)
-            filteredData[type] = filteredData[type].to_numpy()
+            tmp = typeData[typeData["Country/Region"] == country]
+            tmp.drop(tmp.columns[[0,1,2,3,4]], axis=1, inplace=True)
+            filteredData[type] = tmp.to_numpy()
 
         return filteredData
