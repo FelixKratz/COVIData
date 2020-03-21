@@ -29,4 +29,4 @@ def model(R0,Rt,Tinf,Tinc,Iday):
     return series
 
 
-model(2.2,2.2,3.,5.,1.)
+model(2.2,2.2,3.,5.,12.)
