@@ -8,7 +8,7 @@ class SEIRModel:
     def compute(self, steps):
         series = pd.DataFrame({"S":[self.params['S0']],"E":[self.params['E0']],"I":[self.params['I0']],"R":[self.params['Re0']]})
         actual = pd.DataFrame({"S":[self.params['S0']],"E":[self.params['E0']],"I":[self.params['I0']],"R":[self.params['Re0']]})
-        for _ in range(steps):
+        for _ in range(steps - 1):
             S = actual.S - self.params['R0']/self.params['Tinf']*actual.I*actual.S*self.params['dt']
             E = actual.E + self.params['R0']/self.params['Tinf']*actual.I*actual.S*self.params['dt'] - 1/self.params['Tinc']*actual.E*self.params['dt']
             I = actual.I + 1/self.params['Tinc']*actual.E*self.params['dt'] - 1/self.params['Tinf']*actual.I*self.params['dt']
