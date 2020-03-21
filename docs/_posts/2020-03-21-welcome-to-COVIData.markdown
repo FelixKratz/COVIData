@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Herlich Willkommen!"
+title:  "Herzlich Willkommen!"
 date:   2020-03-21 14:04:03 +0100
 categories: graphics demo 
 ---
