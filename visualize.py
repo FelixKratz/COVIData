@@ -51,18 +51,13 @@ class Visualizer:
             pannels.append(Panel(child=fig, title="{}".format(item)))
         tabs=Tabs(tabs=pannels)
         save(tabs)
-        script,div=components(tabs)    
-        with open('docs/_includes/plots/{}/all_cases.html'.format(country), 'w') as f:
-            f.write('<html lang="en">\n')
-            f.write("<head>\n")
-            f.write('<meta charset="utf-8">\n')
-            f.write("<title >CORINNA 17- Cases {}</title>\n".format(country))
-            f.write(script)
-            f.write('</head> \n')
-            f.write('<body>\n')
-            f.write(div)
-            f.write('</body>\n')
-            f.write('</html>')
+        
+        #folgender Code ist so dirty, da hilt noch nciht mal 30 sec. Händewaschen...
+        with open('docs/_includes/plots/{}/all_caseshtm.html'.format(country)) as f:
+            w_o_doctype = f.read().replace('<!DOCTYPE html>', '')
+
+        with open('docs/_includes/plots/{}/all_caseshtm.html'.format(country), "w") as f:
+            f.write(w_o_doctype)
 
 
 
