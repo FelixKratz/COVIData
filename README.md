@@ -13,3 +13,6 @@ https://github.com/CSSEGISandData/COVID-19
 
 *Devpost:
 https://devpost.com/software/predict-the-curve-flattening-pfl1i9/edit#members
+
+*Datensammlung:
+https://docs.google.com/spreadsheets/d/13la9BFcPUeZKnx6amfwogzmhcNxtF_ouBiV6aOpDHFM/edit#gid=0
