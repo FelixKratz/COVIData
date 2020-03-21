@@ -7,5 +7,9 @@ empty_beds=[90000,100000] ##
 empty_intensive_care_beds=27000*0.5
 mean_time_intensive_care_bed=7 #days
 
+#https://de.statista.com/infografik/16676/patientenzahl-pro-pflegekraft-im-internationalen-vergleich/
+#2019
+patients_per_nurse=13
+
 
 
