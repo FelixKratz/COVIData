@@ -26,7 +26,7 @@ class Visualizer:
     def visualize_tabs(self, country):
         self.ind_start_infection = np.argmax(dataHandler.filterForCountry(country)["confirmed"])
         pannels=[]    
-        output_file('docs/_includes/plots/{}/all_cases.html'.format(country), title="CORINNA 17- Cases Germany")
+        output_file('docs/_includes/plots/{}/all_caseshtm.html'.format(country), title="CORINNA 17- Cases Germany")
         for item in ["confirmed", "deaths", "recovered"]:
 
             fig = figure(title="", plot_height=500, plot_width=500,
@@ -53,8 +53,17 @@ class Visualizer:
         save(tabs)
         script,div=components(tabs)    
         with open('docs/_includes/plots/{}/all_cases.html'.format(country), 'w') as f:
-            f.write(div)
+            f.write('<html lang="en">')
+            f.write("<head >")
+            f.write('< meta charset="utf-8" >')
+            f.write("< title >CORINNA 17- Cases {}< /title >".format(country))
             f.write(script)
+            f.write('< /head >')
+            f.write('< body >')
+            f.write(div)
+            f.write('</body>')
+            f.write('</html>')
+
 
 
 
