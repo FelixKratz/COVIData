@@ -48,7 +48,7 @@ class SEIRModel:
                                         "deadly_course": 0})
 
                 actual.N = actual.S + actual.E + actual.I + actual.R
-                #actual.D = actual.I*self.params['darkrate']
+                actual.D = actual.I*self.params['darkrate']
                 #actual.hard_course = actual.I*self.params['darkrate']*self.params['hardrate']
                 #actual.deadly_course = actual.I*self.params['darkrate']*self.params['deathrate']
             self.series = self.series.append(actual,ignore_index=True)
@@ -83,5 +83,5 @@ if __name__ == "__main__" :
                     'deathrate': 0.034 # WHO :  Eröffnungsrede des WHO-Generaldirektors – Pressekonferenz zu COVID-19 – 3. März 2020. WHO, 3. März 2020, abgerufen am 6. März 2020 (englisch).
                     })
 
-    prediction = model.compute(days=16)
-    print(model.get_daily_numbers()['D'])
+    prediction = model.compute_faster(days=16)
+    print(prediction)
