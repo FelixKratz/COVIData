@@ -27,12 +27,35 @@ wird.
 <a href="https://commons.wikimedia.org/w/index.php?curid=2143753">Link</a>
 </p>
 
-Die Daten sollen, dabei interaktiv auf dieser
+Die Daten sollen dabei auf dieser
 Seite veröffentlicht werden und die Modelparameter
-evtl. darüber steuerbar sein. Weitergehend
+evtl. interaktiv darüber steuerbar sein. Weitergehend
 könnte es interessant sein andere verfügbare [Daten](https://docs.google.com/spreadsheets/d/13la9BFcPUeZKnx6amfwogzmhcNxtF_ouBiV6aOpDHFM/edit#gid=0)
 mit einzubeziehen. 
+
+So kann man dann interaktiv austesten, was "flatten the curve"
+aktuell in Deutschland bedeutet.
+
+<a title="Siouxsie Wiles and Toby Morris / CC BY-SA (https://creativecommons.org/licenses/by-sa/4.0)"
+    href="https://commons.wikimedia.org/wiki/File:Covid-19-curves-graphic-social-v3.gif">
+    <img width="512"
+    alt="Covid-19-curves-graphic-social-v3"
+    src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Covid-19-curves-graphic-social-v3.gif/512px-Covid-19-curves-graphic-social-v3.gif">
+</a>
 
 Die Idee des Projekts basiert vorallem auf der Darstellung der 
 JHU-Daten nach [Paul Em](https://paul-em.github.io/covid-19-curves/)
 und dem interaktiven [Epidemic Calculator](https://gabgoh.github.io/COVID/index.html).
+
+Dafür wirken an diesem Projekt aktuell folgende Leute mit:
+
+<ul>
+{% for member in site.data.members %}
+  <li>
+    <a href="https://github.com/{{ member.github }}">
+      {{ member.name }}
+    </a>
+  </li>
+{% endfor %}
+</ul>
+
