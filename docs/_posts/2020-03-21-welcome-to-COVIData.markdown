@@ -7,5 +7,8 @@ categories: graphik
 
 So sehen prinzipiell die Plots aus, die 
 mit [bokeh](https://bokeh.org/) erstellt wurden.
+{% include plots/testplot.html %}
 
-{% include testplot.html %}
+Bestätigte Fälle in Deutschland
+
+{% include plots/Germany/confirmed_cases.html %}
