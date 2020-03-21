@@ -19,6 +19,6 @@ class DataHandler:
             typeData = self.data[type_]
             tmp = typeData[typeData["Country/Region"] == country]
             tmp.drop(tmp.columns[[0,1,2,3,4]], axis=1, inplace=True)
-            filteredData[type_] = tmp.to_numpy()
+            filteredData[type_] = tmp.to_numpy()[0]
 
         return filteredData

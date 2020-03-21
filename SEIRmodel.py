@@ -9,7 +9,7 @@ class SEIRModel:
                                     "I":[self.params['I0']],
                                     "R":[self.params['Re0']],
                                     "N":[self.params['S0']+self.params['E0']+self.params['I0']+self.params['Re0']],
-                                    "D":[self.params["I0"]*self.params["darkrate"]], 
+                                    "D":[self.params["I0"]*self.params["darkrate"]],
                                     "hard_course":[self.params["I0"]*self.params["darkrate"]*self.params["hardrate"]],
                                     "deadly_course":[self.params["I0"]*self.params["darkrate"]*self.params["deathrate"]]})
 
@@ -61,7 +61,7 @@ class SEIRModel:
                                     "I":[self.params['I0']],
                                     "R":[self.params['Re0']],
                                     "N":[self.params['S0']+self.params['E0']+self.params['I0']+self.params['Re0']],
-                                    "D":[self.params["I0"]*self.params["darkrate"]], 
+                                    "D":[self.params["I0"]*self.params["darkrate"]],
                                     "hard_course":[self.params["I0"]*self.params["darkrate"]*self.params["hardrate"]],
                                     "deadly_course":[self.params["I0"]*self.params["darkrate"]*self.params["deathrate"]]})
 
