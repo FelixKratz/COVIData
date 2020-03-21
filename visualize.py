@@ -40,16 +40,15 @@ class Visualizer:
             hist_df = pd.DataFrame({"cols": hist,
                                     "data": y_data,
                                     "date": [datetime(2020,1,22)+timedelta(days=time) for time in t],
+                                    "time":t,
                                     "left": edges[:-1],
                                     "right": edges[1:]}) #dataframe hist for bokeh
             src = ColumnDataSource(hist_df)
-            
-            print(hist_df["date"])
             tooltips=[
             ('Cases', '@data'),
             ('Date', '@date'),
             ]
-            fig.vbar(x=t, bottom=0, top=y_data, color="Blue", width=0.99, legend_label="Daily")
+            fig.vbar(x=hist_df["time"], bottom=0, top=hist_df["data"], color="Blue", width=0.99, legend_label="cases per day")
             fig.add_tools(HoverTool(tooltips=tooltips))
             if not os.path.exists("docs/_includes/plots/{}/".format(country)):
                  os.makedirs("docs/_includes/plots/{}/".format(country))
