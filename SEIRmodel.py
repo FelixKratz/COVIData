@@ -15,22 +15,44 @@ class SEIRModel:
 
     def compute(self, days):
         #calculates the next $steps$ steps and gives back the whole series
-        for _ in range(round(days*1/self.params["dt"])-1):
-            actual = self.series.iloc[-1:]
-            S = actual.S + ( self.params['mu']*(actual.N-actual.S) - self.params['beta']*actual.I*actual.S/actual.N - self.params['nu']*actual.S )*self.params['dt']
-            E = actual.E + ( self.params['beta']*actual.I*actual.S/actual.N - (self.params['mu']+self.params['sigma'])*actual.E ) * self.params['dt']
-            I = actual.I + ( self.params['sigma']*actual.E - (self.params['mu']+self.params['gamma'])*actual.I ) * self.params['dt']
-            R = actual.R + ( self.params['gamma']*actual.I - self.params['mu']*actual.R + self.params['nu']*actual.S) * self.params['dt']
-            if S.values < 0:
-                S = 0
-            if E.values < 0:
-                E = 0
-            if I.values < 0:
-                I = 0
-            if R.values < 0:
-                R = 0
-            self.series = self.series.append(pd.DataFrame({"S":S,"E":E,"I":I,"R":R,"N":S+E+I+R,"D":I*self.params['darkrate'],"hard_course":I*self.params['darkrate']*self.params['hardrate'],"deadly_course":I*self.params['darkrate']*self.params['deathrate']}),ignore_index=True)
-        return self.series.iloc[1:,:]
+        actual = self.series.iloc[-1,:]
+        for _ in range(days-1):
+            for _ in range(round(1/self.params["dt"])):
+                actual = pd.Series({"S": actual.S + ( self.params['mu']*(actual.N-actual.S) - self.params['beta']*actual.I*actual.S/actual.N - self.params['nu']*actual.S )*self.params['dt'],
+                                        "E": actual.E + ( self.params['beta']*actual.I*actual.S/actual.N - (self.params['mu']+self.params['sigma'])*actual.E ) * self.params['dt'],
+                                        "I": actual.I + ( self.params['sigma']*actual.E - (self.params['mu']+self.params['gamma'])*actual.I ) * self.params['dt'],
+                                        "R": actual.R + ( self.params['gamma']*actual.I - self.params['mu']*actual.R + self.params['nu']*actual.S) * self.params['dt'],
+                                        "N": 0 ,
+                                        "D": 0,
+                                        "hard_course": 0,
+                                        "deadly_course": 0})
+
+                actual.N = actual.S + actual.E + actual.I + actual.R
+                actual.D = actual.I*self.params['darkrate']
+                actual.hard_course = actual.I*self.params['darkrate']*self.params['hardrate']
+                actual.deadly_course = actual.I*self.params['darkrate']*self.params['deathrate']
+            self.series = self.series.append(actual,ignore_index=True)
+        return self.series
+
+    def compute_faster(self,days):
+        actual = self.series.iloc[-1,:]
+        for _ in range(days-1):
+            for _ in range(round(1/self.params["dt"])):
+                actual = pd.Series({"S": actual.S + ( self.params['mu']*(actual.N-actual.S) - self.params['beta']*actual.I*actual.S/actual.N - self.params['nu']*actual.S )*self.params['dt'],
+                                        "E": actual.E + ( self.params['beta']*actual.I*actual.S/actual.N - (self.params['mu']+self.params['sigma'])*actual.E ) * self.params['dt'],
+                                        "I": actual.I + ( self.params['sigma']*actual.E - (self.params['mu']+self.params['gamma'])*actual.I ) * self.params['dt'],
+                                        "R": actual.R + ( self.params['gamma']*actual.I - self.params['mu']*actual.R + self.params['nu']*actual.S) * self.params['dt'],
+                                        "N": 0 ,
+                                        "D": 0,
+                                        "hard_course": 0,
+                                        "deadly_course": 0})
+
+                actual.N = actual.S + actual.E + actual.I + actual.R
+                #actual.D = actual.I*self.params['darkrate']
+                #actual.hard_course = actual.I*self.params['darkrate']*self.params['hardrate']
+                #actual.deadly_course = actual.I*self.params['darkrate']*self.params['deathrate']
+            self.series = self.series.append(actual,ignore_index=True)
+        return self.series
 
     def reset(self):
         # resets the series
@@ -42,22 +64,6 @@ class SEIRModel:
                                     "D":[self.params["I0"]*self.params["darkrate"]],
                                     "hard_course":[self.params["I0"]*self.params["darkrate"]*self.params["hardrate"]],
                                     "deadly_course":[self.params["I0"]*self.params["darkrate"]*self.params["deathrate"]]})
-
-    def get_daily_numbers(self):
-        steps_per_day = 1/self.params["dt"]
-        data = pd.DataFrame({"S":[self.params['S0']],
-                            "E":[self.params['E0']],
-                            "I":[self.params['I0']],
-                            "R":[self.params['Re0']],
-                            "N":[self.params['S0']+self.params['E0']+self.params['I0']+self.params['Re0']],
-                            "D":[self.params["I0"]*self.params["darkrate"]],
-                            "hard_course":[self.params["I0"]*self.params["darkrate"]*self.params["hardrate"]],
-                            "deadly_course":[self.params["I0"]*self.params["darkrate"]*self.params["deathrate"]]})
-        i = round(steps_per_day)
-        while i < self.series.shape[0]:
-            data = data.append(self.series.iloc[i,:],ignore_index=True)
-            i = round(i + steps_per_day)
-        return data
 
 
 if __name__ == "__main__" :
