@@ -1,14 +1,14 @@
 import numpy as np
 import pandas as pd
 import os
+from datetime import datetime, timedelta
 from bokeh.io import output_file
 from bokeh.embed import components
 from bokeh.plotting import figure, show, save
-from bokeh.models import ColumnDataSource
 from bokeh.layouts import row, column, gridplot
 from bokeh.models.widgets import Tabs, Panel
 from bokeh.plotting import reset_output
-from bokeh.models import ColumnDataSource
+from bokeh.models import ColumnDataSource, HoverTool
 
 from dataHandler import DataHandler
 from SEIRmodel import SEIRModel
@@ -31,18 +31,26 @@ class Visualizer:
 
             fig = figure(title="", plot_height=500, plot_width=500,
                        tools=["pan,reset,wheel_zoom"])
-
+            
             fig.xaxis.axis_label = 't/days'
             fig.yaxis.axis_label = '# {} cases'.format(item)
             y_data = dataHandler.filterForCountry(country)[item]
             t = np.linspace(1, len(y_data), len(y_data))
             hist,edges=np.histogram(y_data,bins=len(t)) #numpy hist
             hist_df = pd.DataFrame({"cols": hist,
+                                    "data": y_data,
+                                    "date": [datetime(2020,1,22)+timedelta(days=time) for time in t],
                                     "left": edges[:-1],
                                     "right": edges[1:]}) #dataframe hist for bokeh
             src = ColumnDataSource(hist_df)
+            
+            print(hist_df["date"])
+            tooltips=[
+            ('Cases', '@data'),
+            ('Date', '@date'),
+            ]
             fig.vbar(x=t, bottom=0, top=y_data, color="Blue", width=0.99, legend_label="Daily")
-
+            fig.add_tools(HoverTool(tooltips=tooltips))
             if not os.path.exists("docs/_includes/plots/{}/".format(country)):
                  os.makedirs("docs/_includes/plots/{}/".format(country))
 
@@ -52,7 +60,7 @@ class Visualizer:
         tabs=Tabs(tabs=pannels)
         save(tabs)
         
-        #folgender Code ist so dirty, da hilt noch nciht mal 30 sec. Händewaschen...
+        #folgender Code ist so dirty, da hilt noch nicht mal 30 sec. Händewaschen...
         with open('docs/_includes/plots/{}/all_caseshtm.html'.format(country)) as f_in:
             w_o_doctype = f_in.read().splitlines(True)
         with open('docs/_includes/plots/{}/all_caseshtm.html'.format(country), "w") as f_out:
@@ -119,4 +127,4 @@ model = SEIRModel({
     # WHO :  Eröffnungsrede des WHO-Generaldirektors – Pressekonferenz zu COVID-19 – 3. März 2020. WHO, 3. März 2020, abgerufen am 6. März 2020 (englisch).
     'deathrate': 0.034
 })
-Visualizer(dataHandler, model, steps=100, death_rate=0.02).visualize("Germany")
+Visualizer(dataHandler, model, steps=150, death_rate=0.02).visualize("Germany")
