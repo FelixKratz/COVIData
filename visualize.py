@@ -26,4 +26,4 @@ p.line(x, lin(x), legend_label="blup", line_width=2)
 
 output_file('docs/plots/testplot.html')
 
-show(p)
+
