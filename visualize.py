@@ -1,12 +1,17 @@
 import numpy as np
 import pandas as pd
-from bokeh.plotting import figure, show, output_file, save
-from bokeh.models import ColumnDataSource, HoverTool
 import os
-from bokeh.charts import Histogram
-from bokeh.charts import defaults, vplot, hplot, show, output_file
+from bokeh.io import output_file, output_notebook
+from bokeh.plotting import figure, show, save
+from bokeh.models import ColumnDataSource
+from bokeh.layouts import row, column, gridplot
+from bokeh.models.widgets import Tabs, Panel
+from bokeh.plotting import reset_output
+from bokeh.models import ColumnDataSource
+
 from dataHandler import DataHandler
 from SEIRmodel import SEIRModel
+
 class Visualizer:
     def __init__(self, dataHandler, model, steps, death_rate):
         model.compute(steps)
@@ -17,7 +22,35 @@ class Visualizer:
         self.removed=self.cases["R"]*self.darkrate #nicht alle recorvered werden registriert evtl mehr als darkrate infected?
         self.recovered=self.removed*(1-death_rate) 
         self.deceased=self.removed*death_rate
-        
+    def visualize_tabs(self, country):
+        self.ind_start_infection = np.argmax(dataHandler.filterForCountry(country)["confirmed"])
+        pannels=[]    
+        output_file(
+            'docs/_includes/plots/{}/all_cases.html'.format(country), title="CORINNA 17- Cases Germany")
+        for item in ["confirmed", "deaths", "recovered"]:
+
+            fig = figure(title="", plot_height=500, plot_width=500,
+                       tools=["pan,reset,wheel_zoom"])
+
+            fig.xaxis.axis_label = 't/days'
+            fig.yaxis.axis_label = '# {} cases'.format(item)
+            y_data = dataHandler.filterForCountry(country)[item]
+            t = np.linspace(1, len(y_data), len(y_data))
+            hist,edges=np.histogram(y_data,bins=len(t)) #numpy hist
+            hist_df = pd.DataFrame({"cols": hist,
+                                    "left": edges[:-1],
+                                    "right": edges[1:]}) #dataframe hist for bokeh
+            src = ColumnDataSource(hist_df)
+            fig.vbar(x=t, bottom=0, top=y_data, color="Blue", width=0.99, legend_label="Daily")
+
+            if not os.path.exists("docs/_includes/plots/{}/".format(country)):
+                 os.makedirs("docs/_includes/plots/{}/".format(country))
+
+            
+
+            pannels.append(Panel(child=fig, title="{}".format(item)))
+        tabs=Tabs(tabs=pannels)
+        save(tabs)    
 
 
 
@@ -33,7 +66,13 @@ class Visualizer:
             p.yaxis.axis_label = '# {} cases'.format(item)
             y_data = dataHandler.filterForCountry(country)[item]
             t = np.linspace(1, len(y_data), len(y_data))
-            p.line(t, y_data, legend_label="blusdfp", line_width=2)
+            hist,edges=np.histogram(y_data,bins=len(t)) #numpy hist
+            hist_df = pd.DataFrame({"cols": hist,
+                                    "left": edges[:-1],
+                                    "right": edges[1:]}) #dataframe hist for bokeh
+            src = ColumnDataSource(hist_df)
+            p.line(t, y_data, legend_label="blusdfp", line_width=2)                         
+            p.vbar(x=t, bottom=0, top=y_data, color="Blue", width=0.99, legend_label="Daily")
 
             if not os.path.exists("docs/_includes/plots/{}/".format(country)):
                  os.makedirs("docs/_includes/plots/{}/".format(country))
@@ -42,8 +81,10 @@ class Visualizer:
                 'docs/_includes/plots/{}/{}_cases.html'.format(country, item))
 
             save(p)
+            reset_output()
     def visualize(self, country):
         self.visualize_simple(country)
+        self.visualize_tabs(country)
 #####***************
 
 
