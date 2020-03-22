@@ -10,7 +10,7 @@ def absoluteSquareError(simulation, reality):
 
     print(simulation)
     print(reality)
-    return sum((simulation - reality)**2)
+    return sum((np.log(simulation) - np.log(reality))**2)
 
 def squareErrorByElement(simulation, reality):
     reality = np.array(reality)
@@ -18,7 +18,7 @@ def squareErrorByElement(simulation, reality):
     if (len(simulation) != len(reality)):
         print("Error: Non matching input dimensions in absoluteSquareError()!")
 
-    return (simulation - reality)**2
+    return (np.log(simulation) - np.log(reality))**2
 
 def fitParamsToModel(reality, initialGuess, parametersToFit):
     DX = 1e-4
@@ -43,7 +43,7 @@ def fitParamsToModel(reality, initialGuess, parametersToFit):
 
     dX = - np.array(np.linalg.lstsq(jacobian.T, -F)[0])
 
-    dX = dX / np.sqrt(sum(dX**2)) * 1e-1
+    dX = dX / np.sqrt(sum(dX**2)) * 5e-1
 
     i = 0
     for p in parametersToFit:
