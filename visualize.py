@@ -1,7 +1,10 @@
 import numpy as np
 import pandas as pd
 import os
+import math
 from datetime import datetime, timedelta
+
+#bokeh
 from bokeh.io import output_file
 from bokeh.embed import components
 from bokeh.plotting import figure, show, save
@@ -37,41 +40,47 @@ class Visualizer:
 
 
     def visualize_tabs(self, country):
-        self.ind_start_infection = np.argmax(dataHandler.filterForCountry(country)["confirmed"])
-        pannels=[]    
+        self.ind_start_infection = np.argmax(dataHandler.filterForCountry(country)["confirmed"]>=1)
+        panels=[]
+        scales=[]    
         output_file('docs/_includes/plots/{}/all_caseshtm.html'.format(country), title="CORINNA 17- Cases Germany")
-        for item in ["confirmed", "deaths", "recovered"]:
-            y_data = dataHandler.filterForCountry(country)[item]
-            t = np.linspace(1, len(y_data), len(y_data))
-            hist,edges=np.histogram(y_data,bins=len(t)) #numpy hist
-            hist_df = pd.DataFrame({"cols": hist,
-                                    "data": y_data,
-                                    "date": [(datetime(2020,1,22)+timedelta(days=time)).strftime("%d.%m.%Y") for time in t],
-                                    "time": t,
-                                    "left": edges[:-1],
-                                    "right": edges[1:]}) #dataframe hist for bokeh
-            src = ColumnDataSource(hist_df)
-        
+        for axis_type in ["linear", "log"]:
 
-            Tooltips = [
-                ('Cases', '@data'),
-                ('Date', '@date'),
-            ]
-            fig = figure(title="", plot_height=500, plot_width=500,
-                         tools=["pan,reset,wheel_zoom, hover, tap"], tooltips=Tooltips)
-            fig.xaxis.axis_label = 't/days'
-            fig.yaxis.axis_label = '# {} cases'.format(item)
-            fig.xaxis.major_label_overrides = dict(zip(hist_df.time, hist_df.date))
-            fig.vbar(x="time", bottom=0, top="data", color="Blue", width=0.99, legend_label="cases per day", line_width=0.1,source=src)
-            
-            
-            if not os.path.exists("docs/_includes/plots/{}/".format(country)):
-                 os.makedirs("docs/_includes/plots/{}/".format(country))
-            
-            pannels.append(Panel(child=fig, title="{}".format(item))) #adds each pannel to tabs
-        tabs=Tabs(tabs=pannels)
+            for item in ["confirmed", "deaths", "recovered"]:
+                y_data = dataHandler.filterForCountry(country)[item][self.ind_start_infection:]
+                t = np.linspace(1, len(y_data), len(y_data))
+                hist,edges=np.histogram(y_data,bins=len(t)) #numpy hist
+                src ={"cols": hist,
+                                        "data": y_data,
+                                        "date": [(datetime(2020,1,22)+timedelta(days=time)).strftime("%d.%m.%Y") for time in t],
+                                        "time": t,
+                                        "left": edges[:-1],
+                                        "right": edges[1:]} #dataframe hist for bokeh
+
+
+                Tooltips = [
+                    ('Cases', '@data'),
+                    ('Date', '@date'),
+                ]
+                fig = figure(y_axis_type=axis_type,x_range=src["date"], title="", plot_height=500, plot_width=1000,
+                             tools=["pan,reset,wheel_zoom, hover, tap"], tooltips=Tooltips)
+                fig.xaxis.axis_label = 't/days'
+                fig.yaxis.axis_label = '# {} cases'.format(item)
+                fig.xaxis.major_label_orientation = math.pi/3
+
+                #fig.xaxis.major_label_overrides = dict(zip(hist_df.time, hist_df.date))
+                fig.vbar(x="time", bottom=0, top="data", color="Blue", width=0.99, legend_label="cases per day", line_width=0.1,source=src)
+
+
+                if not os.path.exists("docs/_includes/plots/{}/".format(country)):
+                     os.makedirs("docs/_includes/plots/{}/".format(country))
+
+                panels.append(Panel(child=fig, title="{}".format(item))) #adds each pannel to tabs
+            tabs=Tabs(tabs=panels)
+            panels.append(Panel(child=fig, title=axis_type))
+
+        tabs = Tabs(tabs=panels)
         save(tabs)
-        
 
 
 
@@ -81,7 +90,7 @@ class Visualizer:
             dataHandler.filterForCountry(country)["confirmed"])
         for item in ["confirmed", "deaths", "recovered"]:
 
-            p = figure(title="", plot_height=500, plot_width=500,
+            p = figure(title="", plot_height=500, plot_width=1000,
                        tools=["pan,reset,wheel_zoom"])
 
             p.xaxis.axis_label = 't/days'
@@ -121,10 +130,10 @@ class Visualizer:
             'Recovered':  y_data["recovered"]
                 }
        
-        p = figure(x_range=data["date"], title="Stacked Cases COVID-19 {}".format(country), plot_height=500, plot_width=500,
+        p = figure(x_range=data["date"], title="Stacked Cases COVID-19 {}".format(country), plot_height=500, plot_width=1000,
                    tools=["pan,reset,wheel_zoom, tap"])
 
-
+        p.xaxis.major_label_orientation = math.pi/3
         renderers=p.vbar_stack(diff_types, x='time', width=0.9, color=colors, source=data,
              legend_label=diff_types)
         for renderer in renderers:
