@@ -21,6 +21,7 @@ class Visualizer:
         dataHandler.loadData()
         self.darkrate =model.params["darkrate"]
         self.detected=self.cases["D"] #nur 5% der infizierten werden registriert
+        print(self.detected[:50])
         self.infected=self.cases["I"]
         self.deceased=self.cases.deadly_course
         self.recovered=self.cases["R"]- self.deceased
@@ -250,8 +251,8 @@ class Visualizer:
                                     "left": edges[:-1],
                                     "right": edges[1:]}) #dataframe hist for bokeh
             src = ColumnDataSource(hist_df)
-            p.line(t, y_data, legend_label="blusdfp", line_width=2)                         
             p.vbar(x=t, bottom=1, top=y_data, color="Blue", width=0.99, legend_label="Daily")
+            p.line(t, y_data, legend_label="blusdfp", line_width=2)                         
 
             if not os.path.exists("docs/_includes/plots/{}/".format(country)):
                  os.makedirs("docs/_includes/plots/{}/".format(country))
@@ -312,24 +313,6 @@ class Visualizer:
 dataHandler = DataHandler()
 
 model = SEIRModel({
-    # The parameter controlling how often a susceptible-infected contact results in a new exposure.
-    'beta': 0.42836916839876854,
-    # The rate an infected recovers and moves into the resistant phase.
-    'gamma': 0.5133095693346683,
-    # The rate at which an exposed person becomes infective.
-    'sigma': 19.805050738880908,
-    # The natural mortality rate (this is unrelated to disease). This models a population of a constant size,
-    'mu': 0,
-    'nu': 0,      # Ich glaube Immunrate. Wie viele Leute von sich aus Immun sind gegen COVID19
-    'dt': 0.1,
-    'S0': 83e6,
-    'E0': 0,
-    'I0': 38.08889806991853,
-    'Re0': 0,
-    # erstmal China studie # Quelle: Linton MN, Kobayashi T, Yang Y, Hayashi K, Akhmetzhanov RA, Jung S-m, et al. Incubation Period and Other Epidemiological Characteristics of 2019 Novel Coronavirus Infections with Right Truncation: A Statistical Analysis of Publicly Available Case Data. Journal of clinical medicine. 2020.
-    'darkrate': 0.05,
-    # WHO studie:  Novel Coronavirus (2019-nCoV). (PDF; 0,9 MB) Situation Report – 18. WHO, 7. Februar 2020, abgerufen am 8. Februar 2020.
-    'hardrate': 0.154,
-    'deathrate': 0.034
+    'beta': 0.291, 'gamma': 0, 'sigma': 20.336903263992106, 'mu': 0, 'nu': 0, 'dt': 0.1, 'S0': 83000000.0, 'E0': 0, 'I0': 157.57088211473442, 'Re0': 0, 'darkrate': 0.05, 'hardrate': 0.154, 'deathrate': 0.034
 })
 Visualizer(dataHandler, model, steps=150, death_rate=0.02).visualize("Germany")
