@@ -43,7 +43,7 @@ def fitParamsToModel(reality, initialGuess, parametersToFit):
 
     dX = - np.array(np.linalg.lstsq(jacobian.T, -F)[0])
 
-    dX = dX / np.sqrt(sum(dX**2)) * 1e-2
+    dX = dX / np.sqrt(sum(dX**2)) * 5e-1
 
     i = 0
     for p in parametersToFit:

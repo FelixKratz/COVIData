@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 #bokeh
 from bokeh.io import output_file
 from bokeh.embed import components
-from bokeh.plotting import figure, show, save, ColumnDataSource, reset_output
+from bokeh.plotting import figure, show, save, ColumnDataSource, reset_output, CDSView, GroupFilter
 from bokeh.layouts import row, column, gridplot
 from bokeh.models.widgets import Tabs, Panel
 from bokeh.models import  HoverTool, CustomJS, Slider
@@ -58,7 +58,7 @@ class Visualizer:
         p = figure(x_range=data["date"], title="COVID-19-Cases {}. Including SEIR-Model".format(country), plot_height=500, plot_width=1000,
                    tools=["pan,reset,wheel_zoom, tap"])
         p.xaxis.major_label_orientation = math.pi/3
-        p.line(t, self.detected[:len(t)], legend_label="SEIR-Model")
+        p.line(t, self.detected[:len(t)], legend_label="SEIR-Model: Detected cases")
         renderers=p.vbar_stack(diff_types, x='time', width=0.9, color=colors, source=data,
              legend_label=diff_types)
         for renderer in renderers:
@@ -330,6 +330,7 @@ class Visualizer:
                 ('Date', '@date'),
             ], renderers=[renderer])
             p.add_tools(hover)
+            p.legend.click_policy = 'mute'
         save(p)
         reset_output()
 
@@ -348,8 +349,8 @@ class Visualizer:
 
 dataHandler = DataHandler()
 
-model = SEIRModel({'beta': 0.29100178032016055,  # The parameter controlling how often a susceptible-infected contact results in a new exposure.
-              'gamma': 0.35750346249699244,  # The rate an infected recovers and moves into the resistant phase.
+model = SEIRModel({'beta': 0.49100178032016055,  # The parameter controlling how often a susceptible-infected contact results in a new exposure.
+              'gamma': 0.15750346249699244,  # The rate an infected recovers and moves into the resistant phase.
               'sigma': 0.953728174440972, # The rate at which an exposed person becomes infective.
               'mu': 0,      # The natural mortality rate (this is unrelated to disease). This models a population of a constant size,
               'nu': 0,      # Ich glaube Immunrate. Wie viele Leute von sich aus Immun sind gegen COVID19

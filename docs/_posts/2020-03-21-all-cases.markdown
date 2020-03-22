@@ -1,12 +1,32 @@
 ---
 layout: post
-title:  "Tab-switching"
+title:  "Model& Results"
 date:   2020-03-21 17:51:03 +0100
 categories: graphics recovered
 mathjax: true
 ---
 {% include mathjax.html %}
 
+### Underlying model:
+
+$$\begin{aligned}
+\frac{d S}{d t} &=-\beta \frac{S I}{N} \\
+\frac{d E}{d t} &=\beta \frac{S I}{N}-\sigma E \\
+\frac{d I}{d t} &=\sigma E-\gamma I \\
+\frac{d R}{d t} &=\gamma I \\
+N &=S+E+I+R
+\end{aligned}$$ 
+
+
+
+
+Es ist $\beta$ die Infektionsrate, $\sigma$ die Inkubationsrate, aus welcher sich die mittlere Inkubationszeit $T_{\text{Ink.}}=\frac{1}{\sigma}$ ergibt.
+
+$\gamma$ beschreibt die Genesungsrate, somit ergibt sich die Krankheitsdauer zu $T_{\text{krank}}=\frac{1}{\gamma}$.
+
+Aus den Parametern ergibt sich die Reproduktionszahl $R_0=\frac{\beta}{\gamma}$
+
+We assumed no vital dynamics, otherwise, [the model becomes a bit more complicated.](http://www.public.asu.edu/~hnesse/classes/seir.html). In addition, once an individual has survived the virus alive, it remains immune.
 
 {% include plots/Germany/all_caseshtm.html %}
 {% include plots/Germany/stacked.html %}
@@ -15,4 +35,4 @@ mathjax: true
 {% include plots/Germany/model.html %}
 {% include plots/Germany/model_longterm.html %}
 
-$$ r = h = \sqrt{\frac {1} {2}} = \sqrt{\frac {N} {N+1}} \sqrt{\frac {N+1} {2N}} $$
+
