@@ -76,6 +76,91 @@ class Visualizer:
             f.write(table)
         save(p)
         reset_output()
+      
+    def visualilze_model(self):
+        country="Germany"
+        model1 = SEIRModel({
+                        'beta': 0.6,
+                        'gamma': 0.2,
+                        'sigma': 0.5,
+                        'mu': 0,
+                        'nu': 0,
+                        'dt': 0.1,
+                        'S0': 83e6,
+                        'E0': 0,
+                        'I0': 1,
+                        'Re0': 0,
+                        'darkrate': 0.05,
+                        'hardrate': 0.154,
+                        'deathrate': 0.034
+                        },{'date_of_action':80,
+                        'beta':0.6,
+                        'gamma':0.2,
+                        'sigma':0.5,
+                        'mu':0,
+                        'nu':0})
+        model2 = SEIRModel({
+                        'beta': 0.6,
+                        'gamma': 0.2,
+                        'sigma': 0.5,
+                        'mu': 0,
+                        'nu': 0,
+                        'dt': 0.1,
+                        'S0': 83e6,
+                        'E0': 0,
+                        'I0': 1,
+                        'Re0': 0,
+                        'darkrate': 0.05,
+                        'hardrate': 0.154,
+                        'deathrate': 0.034
+                        },{'date_of_action':80,
+                        'beta':0.3,
+                        'gamma':0.2,
+                        'sigma':0.5,
+                        'mu':0,
+                        'nu':0})
+        model3 = SEIRModel({
+                        'beta': 0.6,
+                        'gamma': 0.2,
+                        'sigma': 0.5,
+                        'mu': 0,
+                        'nu': 0,
+                        'dt': 0.1,
+                        'S0': 83e6,
+                        'E0': 0,
+                        'I0': 1,
+                        'Re0': 0,
+                        'darkrate': 0.05,
+                        'hardrate': 0.154,
+                        'deathrate': 0.034
+                        },{'date_of_action':80,
+                        'beta':0.8,
+                        'gamma':0.2,
+                        'sigma':0.5,
+                        'mu':0,
+                        'nu':0})
+        pred1 = model1.compute(days=200,with_action=True)
+        pred2 = model2.compute(days=200,with_action=True)
+        pred3 = model3.compute(days=200,with_action=True)
+
+        colors = ["#c9d9d3", "#718dbf", "#e84d60"]
+
+        output_file('docs/_includes/plots/{}/model.html'.format(country),
+                    title="COREA- Cases Germany")
+
+        t = np.linspace(1, 200, 200)
+
+        p = figure(title="Effekt ", plot_height=500, plot_width=1000,
+                   tools=["pan,reset,wheel_zoom, tap"])
+
+        p.xaxis.major_label_orientation = math.pi/3
+        p.xaxis.axis_label = 't/days'
+        p.yaxis.axis_label = '# detected cases'
+        p.line(t, pred1.hard_course, legend_label="without action", line_width=2, color=colors[0])
+        p.line(t, pred2.hard_course, legend_label="positive action", line_width=2,color=colors[1])
+        p.line(t, pred3.hard_course, legend_label="negative action", line_width=2,color=colors[2]) 
+        save(p)
+        reset_output()
 
 
     def visualize_interactive(self, country):
@@ -219,6 +304,7 @@ class Visualizer:
         self.visualize_stacked(country)
         self.visualize_interactive(country)
         self.visualize_model_data(country)
+        self.visualilze_model()
         self.__rm_doctype(country)
 #####***************
 

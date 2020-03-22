@@ -30,9 +30,9 @@ class SEIRModel:
         #calculates the next $steps$ steps and gives back the whole series
         self.actual = self.series.iloc[-1,:]
 
-        for _ in range(days-1):
+        for i in range(days-1):
             for _ in range(round(1/self.params["dt"])):
-                if with_action and self.params2['date_of_action']<=days:
+                if with_action and self.params2['date_of_action']<=i:
                     self.set_actual(self.params2)
                 else:
                     self.set_actual(self.params)
