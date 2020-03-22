@@ -21,7 +21,7 @@ def squareErrorByElement(simulation, reality):
     return (np.log(simulation) - np.log(reality))**2
 
 def fitParamsToModel(reality, initialGuess, parametersToFit):
-    DX = 1e-4
+    DX = 1e-3
 
     initialModel = SEIRModel(initialGuess)
     initialSim = initialModel.compute_faster(days=len(reality))['D'].to_numpy()
@@ -43,7 +43,7 @@ def fitParamsToModel(reality, initialGuess, parametersToFit):
 
     dX = - np.array(np.linalg.lstsq(jacobian.T, -F)[0])
 
-    dX = dX / np.sqrt(sum(dX**2)) * 5e-1
+    dX = dX / np.sqrt(sum(dX**2)) * 1e-2
 
     i = 0
     for p in parametersToFit:
