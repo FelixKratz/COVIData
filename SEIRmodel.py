@@ -40,7 +40,7 @@ class SEIRModel:
                 self.actual.N = self.actual.S + self.actual.E + self.actual.I + self.actual.R
                 self.actual.D = self.actual.I*self.params['darkrate'] + self.actual.R*self.params['darkrate']
                 self.actual.hard_course = self.actual.I*self.params['darkrate']*self.params['hardrate']
-                self.actual.deadly_course = self.actual.I*self.params['darkrate']*self.params['deathrate']
+                self.actual.deadly_course = self.actual.R*self.params['darkrate']*self.params['deathrate']
             self.series = self.series.append(self.actual,ignore_index=True)
         return self.series
 
@@ -54,8 +54,8 @@ class SEIRModel:
                     self.set_actual(self.params)
                 self.actual.N = self.actual.S + self.actual.E + self.actual.I + self.actual.R
                 self.actual.D = self.actual.I*self.params['darkrate'] + self.actual.R*self.params['darkrate']
-                #actual.hard_course = actual.I*self.params['darkrate']*self.params['hardrate']
-                #actual.deadly_course = actual.I*self.params['darkrate']*self.params['deathrate']
+                #
+                #
             self.series = self.series.append(self.actual,ignore_index=True)
         return self.series
 

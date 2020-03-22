@@ -1,28 +1,29 @@
 import numpy as np
 import pandas as pd
 import os
+import math
 from datetime import datetime, timedelta
+
+#bokeh
 from bokeh.io import output_file
 from bokeh.embed import components
-from bokeh.plotting import figure, show, save
+from bokeh.plotting import figure, show, save, ColumnDataSource, reset_output
 from bokeh.layouts import row, column, gridplot
 from bokeh.models.widgets import Tabs, Panel
-from bokeh.plotting import reset_output
-from bokeh.models import ColumnDataSource, HoverTool
+from bokeh.models import  HoverTool, CustomJS, Slider
 
 from dataHandler import DataHandler
 from SEIRmodel import SEIRModel
 
 class Visualizer:
     def __init__(self, dataHandler, model, steps, death_rate):
-        model.compute(steps)
-        self.cases=model.get_daily_numbers()
+        self.cases = model.compute(steps)
         dataHandler.loadData()
         self.darkrate =model.params["darkrate"]
-        self.infected=self.cases["I"].to_numpy()*self.darkrate #nur 5% der infizierten werden registriert
-        self.removed=self.cases["R"]*self.darkrate #nicht alle recorvered werden registriert evtl mehr als darkrate infected?
-        self.recovered=self.removed*(1-death_rate) 
-        self.deceased=self.removed*death_rate
+        self.infected=self.cases["D"] #nur 5% der infizierten werden registriert
+        self.deceased=self.cases.deadly_course
+        self.recovered=self.cases["R"]*self.darkrate - self.deceased
+        
     ##dirty helper:
     def __rm_doctype(self,country):
         #folgender Code ist so dirty, da hilft noch nicht mal 30 sec. Händewaschen... AAber er entfernt immer den Doctype html
@@ -35,43 +36,73 @@ class Visualizer:
                 f_out.writelines(w_o_doctype[5:])
 
 
+    def visualilze_interactive(self, country):
+        print(country)
+        x = np.linspace(0, 10, 500)
+        y = np.sin(x)
+        source = ColumnDataSource(data=dict(x=x, y=y))
+        plot = figure(y_range=(-10, 10), plot_width=400, plot_height=400)
+        plot.line('x', 'y', source=source, line_width=3, line_alpha=0.6)
+        slider = Slider(start=0.1, end=10, value=1, step=.1, title="Amplitude")
+        callback = CustomJS(args=dict(source=source, amp=slider),
+                    code="""
+                    const data = source.data;
+                    const A = amp.value;
+                    const x = data['x']
+                    const y = data['y']
+                    for (var i = 0; i < x.length; i++) {
+                        y[i] = A*Math.sin(x[i]);
+                    }
+                    source.change.emit();
+        """)
 
+        slider.js_on_change('value', callback)
+
+        layout = row(
+        plot,
+        column(slider),
+        )
+        output_file('docs/_includes/plots/{}/slider.html'.format(country) , title="slider test")
+        save(layout)
     def visualize_tabs(self, country):
-        self.ind_start_infection = np.argmax(dataHandler.filterForCountry(country)["confirmed"])
-        pannels=[]    
+        self.ind_start_infection = np.argmax(dataHandler.filterForCountry(country)["confirmed"]>=1)
+        panels=[]
+        scales=[]    
         output_file('docs/_includes/plots/{}/all_caseshtm.html'.format(country), title="CORINNA 17- Cases Germany")
-        for item in ["confirmed", "deaths", "recovered"]:
-            y_data = dataHandler.filterForCountry(country)[item]
-            t = np.linspace(1, len(y_data), len(y_data))
-            hist,edges=np.histogram(y_data,bins=len(t)) #numpy hist
-            hist_df = pd.DataFrame({"cols": hist,
-                                    "data": y_data,
-                                    "date": [(datetime(2020,1,22)+timedelta(days=time)).strftime("%d.%m.%Y") for time in t],
-                                    "time": t,
-                                    "left": edges[:-1],
-                                    "right": edges[1:]}) #dataframe hist for bokeh
-            src = ColumnDataSource(hist_df)
-        
+        for axis_type in ["linear", "log"]:
 
-            Tooltips = [
-                ('Cases', '@data'),
-                ('Date', '@date'),
-            ]
-            fig = figure(title="", plot_height=500, plot_width=500,
-                         tools=["pan,reset,wheel_zoom, hover, tap"], tooltips=Tooltips)
-            fig.xaxis.axis_label = 't/days'
-            fig.yaxis.axis_label = '# {} cases'.format(item)
-            fig.xaxis.major_label_overrides = dict(zip(hist_df.time, hist_df.date))
-            fig.vbar(x="time", bottom=0, top="data", color="Blue", width=0.99, legend_label="cases per day", line_width=0.1,source=src)
-            
-            
-            if not os.path.exists("docs/_includes/plots/{}/".format(country)):
-                 os.makedirs("docs/_includes/plots/{}/".format(country))
-            
-            pannels.append(Panel(child=fig, title="{}".format(item))) #adds each pannel to tabs
-        tabs=Tabs(tabs=pannels)
+            for item in ["confirmed", "deaths", "recovered"]:
+                y_data = dataHandler.filterForCountry(country)[item][self.ind_start_infection:]
+                t = np.linspace(1, len(y_data), len(y_data))
+                hist,edges=np.histogram(y_data,bins=len(t)) #numpy hist
+                src ={"cols": hist,
+                                        "data": y_data,
+                                        "date": [(datetime(2020,1,22)+timedelta(days=time)).strftime("%d.%m.%Y") for time in t],
+                                        "time": t,
+                                        "left": edges[:-1],
+                                        "right": edges[1:]} #dataframe hist for bokeh
+
+
+                Tooltips = [
+                    ('Cases', '@data'),
+                    ('Date', '@date'),
+                ]
+                fig = figure(y_axis_type=axis_type,x_range=src["date"], title="", plot_height=500, plot_width=1000,
+                             tools=["pan,reset,wheel_zoom, hover, tap"], tooltips=Tooltips)
+                fig.xaxis.axis_label = 't/days'
+                fig.yaxis.axis_label = '# {} cases'.format(item)
+                fig.xaxis.major_label_orientation = math.pi/3
+
+                #fig.xaxis.major_label_overrides = dict(zip(hist_df.time, hist_df.date))
+                fig.vbar(x="time", bottom=1, top="data", color="Blue", width=0.99, legend_label="cases per day", line_width=0.1,source=src)
+
+
+                if not os.path.exists("docs/_includes/plots/{}/".format(country)):
+                     os.makedirs("docs/_includes/plots/{}/".format(country))
+
+                panels.append(Panel(child=fig, title="{}-{}".format(item, axis_type))) #adds each pannel to tabs
+        tabs = Tabs(tabs=panels)
         save(tabs)
-        
 
 
 
@@ -81,7 +112,7 @@ class Visualizer:
             dataHandler.filterForCountry(country)["confirmed"])
         for item in ["confirmed", "deaths", "recovered"]:
 
-            p = figure(title="", plot_height=500, plot_width=500,
+            p = figure(title="", plot_height=500, plot_width=1000,
                        tools=["pan,reset,wheel_zoom"])
 
             p.xaxis.axis_label = 't/days'
@@ -94,7 +125,7 @@ class Visualizer:
                                     "right": edges[1:]}) #dataframe hist for bokeh
             src = ColumnDataSource(hist_df)
             p.line(t, y_data, legend_label="blusdfp", line_width=2)                         
-            p.vbar(x=t, bottom=0, top=y_data, color="Blue", width=0.99, legend_label="Daily")
+            p.vbar(x=t, bottom=1, top=y_data, color="Blue", width=0.99, legend_label="Daily")
 
             if not os.path.exists("docs/_includes/plots/{}/".format(country)):
                  os.makedirs("docs/_includes/plots/{}/".format(country))
@@ -121,10 +152,10 @@ class Visualizer:
             'Recovered':  y_data["recovered"]
                 }
        
-        p = figure(x_range=data["date"], title="Stacked Cases COVID-19 {}".format(country), plot_height=500, plot_width=500,
+        p = figure(x_range=data["date"], title="Stacked Cases COVID-19 {}".format(country), plot_height=500, plot_width=1000,
                    tools=["pan,reset,wheel_zoom, tap"])
 
-
+        p.xaxis.major_label_orientation = math.pi/3
         renderers=p.vbar_stack(diff_types, x='time', width=0.9, color=colors, source=data,
              legend_label=diff_types)
         for renderer in renderers:
@@ -136,10 +167,12 @@ class Visualizer:
             p.add_tools(hover)
         save(p)
         reset_output()
+
     def visualize(self, country):
         self.visualize_simple(country)
         self.visualize_tabs(country)
         self.visualize_stacked(country)
+        self.visualilze_interactive(country)
         self.__rm_doctype(country)
 #####***************
 
