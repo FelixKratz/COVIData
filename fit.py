@@ -10,7 +10,7 @@ germanData = dataHandler.filterForCountry("Germany")
 fitParamsToModel(germanData['confirmed'][4:],
                  initialGuess={'beta': 0.29100178032016055,  # The parameter controlling how often a susceptible-infected contact results in a new exposure.
                                'gamma': 0.35750346249699244,  # The rate an infected recovers and moves into the resistant phase.
-                               'sigma': 19.953728174440972, # The rate at which an exposed person becomes infective.
+                               'sigma': 0.53728174440972, # The rate at which an exposed person becomes infective.
                                'mu': 0,      # The natural mortality rate (this is unrelated to disease). This models a population of a constant size,
                                'nu': 0,      # Ich glaube Immunrate. Wie viele Leute von sich aus Immun sind gegen COVID19
                                'dt': 0.1,

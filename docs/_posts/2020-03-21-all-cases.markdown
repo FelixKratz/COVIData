@@ -3,8 +3,9 @@ layout: post
 title:  "Tab-switching"
 date:   2020-03-21 17:51:03 +0100
 categories: graphics recovered
+mathjax: true
 ---
-
+{% include mathjax.html %}
 
 
 {% include plots/Germany/all_caseshtm.html %}
@@ -12,4 +13,6 @@ categories: graphics recovered
 {% include plots/Germany/model_data.html %}
 {% include table/Germany/model_data.html %}
 {% include plots/Germany/model.html %}
+{% include plots/Germany/model_longterm.html %}
 
+$$ r = h = \sqrt{\frac {1} {2}} = \sqrt{\frac {N} {N+1}} \sqrt{\frac {N+1} {2N}} $$

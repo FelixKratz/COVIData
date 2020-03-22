@@ -251,10 +251,10 @@ class Visualizer:
                                     "left": edges[:-1],
                                     "right": edges[1:]}) #dataframe hist for bokeh
             src = ColumnDataSource(hist_df)
-            p.line(t, y_data, legend_label="blusdfp", line_width=2)
-            p.vbar(x=t, bottom=1, top=y_data, color="Blue", width=0.99, legend_label="Daily")
-            p.line(t, y_data, legend_label="blusdfp", line_width=2)                         
-
+            hist=p.vbar(x=t, bottom=1, top=y_data, color="Blue", width=0.99, legend_label="Daily")
+            hist.level="underlay"
+            line=p.line(t, y_data, legend_label="blusdfp", line_width=2)                         
+            line.level="overlay"
             if not os.path.exists("docs/_includes/plots/{}/".format(country)):
                  os.makedirs("docs/_includes/plots/{}/".format(country))
 
@@ -299,6 +299,39 @@ class Visualizer:
             p.add_tools(hover)
         save(p)
         reset_output()
+    def visualize_longterm(self, country):
+        self.ind_start_infection = np.argmax(
+            dataHandler.filterForCountry(country)["confirmed"] >= 1)
+        output_file('docs/_includes/plots/{}/model_longterm.html'.format(country), title="Covid19-Cases Germany")
+        diff_types = ["Confirmed", "Deaths", "Recovered"]
+        colors = ["#c9d9d3", "#718dbf", "#e84d60"]
+        y_data = dataHandler.filterForCountry(country)
+        t_data = np.linspace(1, len(y_data["recovered"][self.ind_start_infection:]), len(
+            y_data["recovered"][self.ind_start_infection:]))
+        t_model=np.linspace(1,len(self.detected), len(self.detected))
+        data={
+            'time':t_model,
+            "date": [(datetime(2020, 1, 22)+timedelta(days=time)).strftime("%d.%m.%Y") for time in t_model],
+            'Confirmed': np.append(y_data["confirmed"][self.ind_start_infection:],([0]*(len(t_model)-len(t_data)))),
+            'Deaths':  np.append(y_data["deaths"][self.ind_start_infection:],([0]*(len(t_model)-len(t_data)))),
+            'Recovered':  np.append(y_data["recovered"][self.ind_start_infection:],([0]*(len(t_model)-len(t_data))))
+                }
+        print(data["time"], data["Deaths"])
+        p = figure(x_range=data["date"], title="COVID-19-Cases {}. Including SEIR-Model".format(country), plot_height=500, plot_width=1000,
+                   tools=["pan,reset,wheel_zoom, tap"])
+        p.xaxis.major_label_orientation = math.pi/3
+        p.line(t_model, self.detected, legend_label="SEIR-Model")
+        renderers=p.vbar_stack(diff_types, x='time', width=0.9, color=colors, source=data,
+             legend_label=diff_types)
+        for renderer in renderers:
+            case_type=renderer.name
+            hover=HoverTool(tooltips=[
+                ("%s total" % case_type, "@%s" % case_type),
+                ('Date', '@date'),
+            ], renderers=[renderer])
+            p.add_tools(hover)
+        save(p)
+        reset_output()
 
     def visualize(self, country):
         self.visualize_simple(country)
@@ -307,6 +340,8 @@ class Visualizer:
         self.visualize_interactive(country)
         self.visualize_model_data(country)
         self.visualilze_model()
+        self.visualize_longterm(country)
+
         self.__rm_doctype(country)
 #####***************
 
@@ -315,7 +350,7 @@ dataHandler = DataHandler()
 
 model = SEIRModel({'beta': 0.29100178032016055,  # The parameter controlling how often a susceptible-infected contact results in a new exposure.
               'gamma': 0.35750346249699244,  # The rate an infected recovers and moves into the resistant phase.
-              'sigma': 19.953728174440972, # The rate at which an exposed person becomes infective.
+              'sigma': 0.953728174440972, # The rate at which an exposed person becomes infective.
               'mu': 0,      # The natural mortality rate (this is unrelated to disease). This models a population of a constant size,
               'nu': 0,      # Ich glaube Immunrate. Wie viele Leute von sich aus Immun sind gegen COVID19
               'dt': 0.1,
