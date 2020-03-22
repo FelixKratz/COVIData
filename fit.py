@@ -7,7 +7,7 @@ dataHandler.loadData()
 
 germanData = dataHandler.filterForCountry("Germany")
 
-fitParamsToModel(germanData['confirmed'][4:50],
+fitParamsToModel(germanData['confirmed'][25:],
                  initialGuess={'beta': 0.42836916839876854,  # The parameter controlling how often a susceptible-infected contact results in a new exposure.
                                'gamma': 0.5133095693346683,  # The rate an infected recovers and moves into the resistant phase.
                                'sigma': 19.805050738880908, # The rate at which an exposed person becomes infective.
