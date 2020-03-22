@@ -48,6 +48,8 @@ def fitParamsToModel(reality, initialGuess, parametersToFit):
     i = 0
     for p in parametersToFit:
         initialGuess[p] += dX[i]
+        if initialGuess[p] < 0:
+            initialGuess[p] = 0
         i += 1
 
     finalModel = SEIRModel(initialGuess)
