@@ -85,7 +85,7 @@ class SEIRModel:
 
 if __name__ == "__main__" :
     model = SEIRModel({
-                    'beta': 0.6,  # The parameter controlling how often a susceptible-infected contact results in a new exposure.
+                    'beta': 0.2,  # The parameter controlling how often a susceptible-infected contact results in a new exposure.
                     'gamma':0.2,  # The rate an infected recovers and moves into the resistant phase.
                     'sigma': 0.5, # The rate at which an exposed person becomes infective.
                     'mu': 0,      # The natural mortality rate (this is unrelated to disease). This models a population of a constant size,
