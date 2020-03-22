@@ -67,8 +67,8 @@ class SEIRModel:
                                     "R":[self.params['Re0']],
                                     "N":[self.params['S0']+self.params['E0']+self.params['I0']+self.params['Re0']],
                                     "D":[self.params["I0"]*self.params["darkrate"]],
-                                    "hard_course":[self.params["I0"]*self.params["darkrate"]*self.params["hardrate"]],
-                                    "deadly_course":[self.params["I0"]*self.params["darkrate"]*self.params["deathrate"]]})
+                                    "hard_course":[self.params["I0"]*self.params["hardrate"]],
+                                    "deadly_course":[self.params["I0"]*self.params["deathrate"]]})
 
     def get_daily_numbers(self):
         steps_per_day = 1/self.params["dt"]

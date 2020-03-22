@@ -20,9 +20,10 @@ class Visualizer:
         self.cases = model.compute(steps)
         dataHandler.loadData()
         self.darkrate =model.params["darkrate"]
-        self.infected=self.cases["D"] #nur 5% der infizierten werden registriert
+        self.detected=self.cases["D"] #nur 5% der infizierten werden registriert
+        self.infected=self.cases["I"]
         self.deceased=self.cases.deadly_course
-        self.recovered=self.cases["R"]*self.darkrate - self.deceased
+        self.recovered=self.cases["R"]- self.deceased
         
     ##dirty helper:
     def __rm_doctype(self,country):
@@ -34,10 +35,50 @@ class Visualizer:
                 w_o_doctype = f_in.read().splitlines(True)
             with open(file, "w") as f_out:
                 f_out.writelines(w_o_doctype[5:])
+    def visualize_model_data(self, country):
+        self.ind_start_infection = np.argmax(
+            dataHandler.filterForCountry(country)["confirmed"] >= 1)
+        output_file('docs/_includes/plots/{}/model_data.html'.format(country), title="CORINNA 17- Cases Germany")
+        diff_types = ["Confirmed", "Deaths", "Recovered"]
+        colors = ["#c9d9d3", "#718dbf", "#e84d60"]
+        y_data = dataHandler.filterForCountry(
+            country)
+        t = np.linspace(1, len(y_data["recovered"][self.ind_start_infection:]), len(
+            y_data["recovered"][self.ind_start_infection:]))
+        
+        data={
+            'time':t,
+            "date": [(datetime(2020, 1, 22)+timedelta(days=time)).strftime("%d.%m.%Y") for time in t],
+            'Confirmed': y_data["confirmed"][self.ind_start_infection:],
+            'Deaths':  y_data["deaths"][self.ind_start_infection:],
+            'Recovered':  y_data["recovered"][self.ind_start_infection:]
+                }
+       
+        p = figure(x_range=data["date"], title="COVID-19-Cases {}. Including SEIR-Model".format(country), plot_height=500, plot_width=1000,
+                   tools=["pan,reset,wheel_zoom, tap"])
+        p.line(t, self.detected[:len(t)], legend_label="SEIR-Model")
+        p.xaxis.major_label_orientation = math.pi/3
+        renderers=p.vbar_stack(diff_types, x='time', width=0.9, color=colors, source=data,
+             legend_label=diff_types)
+        for renderer in renderers:
+            case_type=renderer.name
+            hover=HoverTool(tooltips=[
+                ("%s total" % case_type, "@%s" % case_type),
+                ('Date', '@date'),
+            ], renderers=[renderer])
+            p.add_tools(hover)
+        print(type(list(model.params.keys())))
+        df = pd.DataFrame({"Parameter":list(model.params.keys()), "value":list(model.params.values())})
+        table=df.to_html()
+        if not os.path.exists("docs/_includes/table/{}/".format(country)):
+                     os.makedirs("docs/_includes/table/{}/".format(country))
+        with open("docs/_includes/table/{}/model_data.html".format(country), "w") as f:
+            f.write(table)
+        save(p)
+        reset_output()
 
 
-    def visualilze_interactive(self, country):
-        print(country)
+    def visualize_interactive(self, country):
         x = np.linspace(0, 10, 500)
         y = np.sin(x)
         source = ColumnDataSource(data=dict(x=x, y=y))
@@ -94,7 +135,7 @@ class Visualizer:
                 fig.xaxis.major_label_orientation = math.pi/3
 
                 #fig.xaxis.major_label_overrides = dict(zip(hist_df.time, hist_df.date))
-                fig.vbar(x="time", bottom=1, top="data", color="Blue", width=0.99, legend_label="cases per day", line_width=0.1,source=src)
+                fig.vbar(x="time", bottom=0.01, top="data", color="Blue", width=0.99, legend_label="cases per day", line_width=0.1,source=src)
 
 
                 if not os.path.exists("docs/_includes/plots/{}/".format(country)):
@@ -137,19 +178,23 @@ class Visualizer:
             reset_output()
 
     def visualize_stacked(self, country):
+        self.ind_start_infection = np.argmax(
+            dataHandler.filterForCountry(country)["confirmed"] >= 1)
         output_file('docs/_includes/plots/{}/stacked.html'.format(country),
                     title="COREA- Cases Germany")
         diff_types = ["Confirmed", "Deaths", "Recovered"]
         colors = ["#c9d9d3", "#718dbf", "#e84d60"]
-        y_data = dataHandler.filterForCountry(country)
-        t = np.linspace(1, len(y_data["recovered"]), len(y_data["recovered"]))
+        y_data = dataHandler.filterForCountry(
+            country)
+        t = np.linspace(1, len(y_data["recovered"][self.ind_start_infection:]), len(
+            y_data["recovered"][self.ind_start_infection:]))
         
         data={
             'time':t,
             "date": [(datetime(2020, 1, 22)+timedelta(days=time)).strftime("%d.%m.%Y") for time in t],
-            'Confirmed':y_data["confirmed"],
-            'Deaths':  y_data["deaths"],
-            'Recovered':  y_data["recovered"]
+            'Confirmed': y_data["confirmed"][self.ind_start_infection:],
+            'Deaths':  y_data["deaths"][self.ind_start_infection:],
+            'Recovered':  y_data["recovered"][self.ind_start_infection:]
                 }
        
         p = figure(x_range=data["date"], title="Stacked Cases COVID-19 {}".format(country), plot_height=500, plot_width=1000,
@@ -172,7 +217,8 @@ class Visualizer:
         self.visualize_simple(country)
         self.visualize_tabs(country)
         self.visualize_stacked(country)
-        self.visualilze_interactive(country)
+        self.visualize_interactive(country)
+        self.visualize_model_data(country)
         self.__rm_doctype(country)
 #####***************
 
@@ -181,24 +227,23 @@ dataHandler = DataHandler()
 
 model = SEIRModel({
     # The parameter controlling how often a susceptible-infected contact results in a new exposure.
-    'beta': 0.9,
+    'beta': 0.016860477770656995,
     # The rate an infected recovers and moves into the resistant phase.
-    'gamma': 0.2,
+    'gamma': 0.056376046656360854,
     # The rate at which an exposed person becomes infective.
-    'sigma': 0.5,
+    'sigma': 20.293257546664027,
     # The natural mortality rate (this is unrelated to disease). This models a population of a constant size,
     'mu': 0,
     'nu': 0,      # Ich glaube Immunrate. Wie viele Leute von sich aus Immun sind gegen COVID19
     'dt': 0.1,
     'S0': 83e6,
     'E0': 0,
-    'I0': 1,
+    'I0': 81.68139377344086,
     'Re0': 0,
     # erstmal China studie # Quelle: Linton MN, Kobayashi T, Yang Y, Hayashi K, Akhmetzhanov RA, Jung S-m, et al. Incubation Period and Other Epidemiological Characteristics of 2019 Novel Coronavirus Infections with Right Truncation: A Statistical Analysis of Publicly Available Case Data. Journal of clinical medicine. 2020.
     'darkrate': 0.05,
     # WHO studie:  Novel Coronavirus (2019-nCoV). (PDF; 0,9 MB) Situation Report – 18. WHO, 7. Februar 2020, abgerufen am 8. Februar 2020.
     'hardrate': 0.154,
-    # WHO :  Eröffnungsrede des WHO-Generaldirektors – Pressekonferenz zu COVID-19 – 3. März 2020. WHO, 3. März 2020, abgerufen am 6. März 2020 (englisch).
-    'deathrate': 0.034
+    'deathrate': 0.03
 })
 Visualizer(dataHandler, model, steps=150, death_rate=0.02).visualize("Germany")
