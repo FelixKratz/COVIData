@@ -21,11 +21,10 @@ def squareErrorByElement(simulation, reality):
     return (simulation - reality)**2
 
 def fitParamsToModel(reality, initialGuess, parametersToFit):
-    DX = 1e-6
+    DX = 1e-4
 
     initialModel = SEIRModel(initialGuess)
-    initialModel.compute(days=len(reality))
-    initialSim = initialModel.get_daily_numbers()['D'].to_numpy()
+    initialSim = initialModel.compute_faster(days=len(reality))['D'].to_numpy()
     initialError = absoluteSquareError(initialSim, reality)
     F = squareErrorByElement(initialSim, reality)
     jacobian = np.zeros((len(parametersToFit), len(reality)))
@@ -37,15 +36,14 @@ def fitParamsToModel(reality, initialGuess, parametersToFit):
             displacement = initialGuess
             displacement[p] += DX * j
             displacedModel = SEIRModel(displacement)
-            displacedModel.compute(days=len(reality))
-            displacedSimulation = displacedModel.get_daily_numbers()['D'].to_numpy()
+            displacedSimulation = displacedModel.compute_faster(days=len(reality))['D'].to_numpy()
             error[(j + 1) // 2] = squareErrorByElement(displacedSimulation, reality)
         jacobian[i] = (error[0] - error[1]) / (2* DX)
         i+=1
 
     dX = - np.array(np.linalg.lstsq(jacobian.T, -F)[0])
 
-    dX = dX / np.sqrt(sum(dX**2)) * e-1
+    dX = dX / np.sqrt(sum(dX**2)) * 5e-1
 
     i = 0
     for p in parametersToFit:
@@ -53,8 +51,7 @@ def fitParamsToModel(reality, initialGuess, parametersToFit):
         i += 1
 
     finalModel = SEIRModel(initialGuess)
-    finalModel.compute(days=len(reality))
-    finalSim = finalModel.get_daily_numbers()['D'].to_numpy()
+    finalSim = finalModel.compute_faster(days=len(reality))['D'].to_numpy()
     finalError = absoluteSquareError(finalSim, reality)
 
     print("Initial Error: ", initialError)

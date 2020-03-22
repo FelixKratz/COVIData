@@ -17,15 +17,13 @@ from SEIRmodel import SEIRModel
 
 class Visualizer:
     def __init__(self, dataHandler, model, steps, death_rate):
-        model.compute(steps)
-        self.cases=model.get_daily_numbers()
+        self.cases = model.compute(steps)
         dataHandler.loadData()
         self.darkrate =model.params["darkrate"]
-        self.infected=self.cases["I"].to_numpy()*self.darkrate #nur 5% der infizierten werden registriert
-        self.removed=self.cases["R"]*self.darkrate #nicht alle recorvered werden registriert evtl mehr als darkrate infected?
-        self.recovered=self.removed*(1-death_rate) 
-        self.deceased=self.removed*death_rate
-    
+        self.infected=self.cases["D"] #nur 5% der infizierten werden registriert
+        self.deceased=self.cases.deadly_course
+        self.recovered=self.cases["R"]*self.darkrate - self.deceased
+        
     ##dirty helper:
     def __rm_doctype(self,country):
         #folgender Code ist so dirty, da hilft noch nicht mal 30 sec. Händewaschen... AAber er entfernt immer den Doctype html

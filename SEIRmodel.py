@@ -24,23 +24,23 @@ class SEIRModel:
                         "D": None,
                         "hard_course": None,
                         "deadly_course": None})
-        
+
 
     def compute(self, days, with_action = False):
         #calculates the next $steps$ steps and gives back the whole series
         self.actual = self.series.iloc[-1,:]
-        
+
         for _ in range(days-1):
             for _ in range(round(1/self.params["dt"])):
                 if with_action and self.params2['date_of_action']<=days:
                     self.set_actual(self.params2)
                 else:
                     self.set_actual(self.params)
-                
+
                 self.actual.N = self.actual.S + self.actual.E + self.actual.I + self.actual.R
                 self.actual.D = self.actual.I*self.params['darkrate'] + self.actual.R*self.params['darkrate']
                 self.actual.hard_course = self.actual.I*self.params['darkrate']*self.params['hardrate']
-                self.actual.deadly_course = self.actual.I*self.params['darkrate']*self.params['deathrate']
+                self.actual.deadly_course = self.actual.R*self.params['darkrate']*self.params['deathrate']
             self.series = self.series.append(self.actual,ignore_index=True)
         return self.series
 
@@ -54,8 +54,8 @@ class SEIRModel:
                     self.set_actual(self.params)
                 self.actual.N = self.actual.S + self.actual.E + self.actual.I + self.actual.R
                 self.actual.D = self.actual.I*self.params['darkrate'] + self.actual.R*self.params['darkrate']
-                #actual.hard_course = actual.I*self.params['darkrate']*self.params['hardrate']
-                #actual.deadly_course = actual.I*self.params['darkrate']*self.params['deathrate']
+                #
+                #
             self.series = self.series.append(self.actual,ignore_index=True)
         return self.series
 
@@ -90,15 +90,15 @@ class SEIRModel:
 
 if __name__ == "__main__" :
     model = SEIRModel({
-                    'beta': 0.6,  # The parameter controlling how often a susceptible-infected contact results in a new exposure.
-                    'gamma':0.2,  # The rate an infected recovers and moves into the resistant phase.
-                    'sigma': 0.5, # The rate at which an exposed person becomes infective.
+                    'beta': 0.27,  # The parameter controlling how often a susceptible-infected contact results in a new exposure.
+                    'gamma':0.056,  # The rate an infected recovers and moves into the resistant phase.
+                    'sigma': 50, # The rate at which an exposed person becomes infective.
                     'mu': 0,      # The natural mortality rate (this is unrelated to disease). This models a population of a constant size,
                     'nu': 0,      # Ich glaube Immunrate. Wie viele Leute von sich aus Immun sind gegen COVID19
                     'dt': 0.1,
                     'S0': 83e6,
                     'E0': 0,
-                    'I0': 20,
+                    'I0': 32.6,
                     'Re0': 0,
                     'darkrate': 0.10, # erstmal China studie # Quelle: Linton MN, Kobayashi T, Yang Y, Hayashi K, Akhmetzhanov RA, Jung S-m, et al. Incubation Period and Other Epidemiological Characteristics of 2019 Novel Coronavirus Infections with Right Truncation: A Statistical Analysis of Publicly Available Case Data. Journal of clinical medicine. 2020.
                     'hardrate': 0.154, # WHO studie:  Novel Coronavirus (2019-nCoV). (PDF; 0,9 MB) Situation Report – 18. WHO, 7. Februar 2020, abgerufen am 8. Februar 2020.
