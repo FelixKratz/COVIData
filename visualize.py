@@ -25,13 +25,13 @@ class Visualizer:
         self.infected=self.cases["I"]
         self.deceased=self.cases.deadly_course
         self.recovered=self.cases["R"]- self.deceased
-        
+
     ##dirty helper:
     def __rm_doctype(self,country):
         #folgender Code ist so dirty, da hilft noch nicht mal 30 sec. Händewaschen... AAber er entfernt immer den Doctype html
         path = os.getcwd()+"/docs/_includes/plots/{}/".format(country)
         htmlfiles = [os.path.join(path, file) for file in os.listdir(path) if file.endswith((".html", ".htm"))]
-        for file in htmlfiles:             
+        for file in htmlfiles:
             with open(file) as f_in:
                 w_o_doctype = f_in.read().splitlines(True)
             with open(file, "w") as f_out:
@@ -46,7 +46,7 @@ class Visualizer:
             country)
         t = np.linspace(1, len(y_data["recovered"][self.ind_start_infection:]), len(
             y_data["recovered"][self.ind_start_infection:]))
-        
+
         data={
             'time':t,
             "date": [(datetime(2020, 1, 22)+timedelta(days=time)).strftime("%d.%m.%Y") for time in t],
@@ -54,7 +54,7 @@ class Visualizer:
             'Deaths':  y_data["deaths"][self.ind_start_infection:],
             'Recovered':  y_data["recovered"][self.ind_start_infection:]
                 }
-       
+
         p = figure(x_range=data["date"], title="COVID-19-Cases {}. Including SEIR-Model".format(country), plot_height=500, plot_width=1000,
                    tools=["pan,reset,wheel_zoom, tap"])
         p.xaxis.major_label_orientation = math.pi/3
@@ -77,7 +77,7 @@ class Visualizer:
             f.write(table)
         save(p)
         reset_output()
-      
+
     def visualilze_model(self):
         country="Germany"
         model1 = SEIRModel({
@@ -159,7 +159,7 @@ class Visualizer:
         p.yaxis.axis_label = '# detected cases'
         p.line(t, pred1.hard_course, legend_label="without action", line_width=2, color=colors[0])
         p.line(t, pred2.hard_course, legend_label="positive action", line_width=2,color=colors[1])
-        p.line(t, pred3.hard_course, legend_label="negative action", line_width=2,color=colors[2]) 
+        p.line(t, pred3.hard_course, legend_label="negative action", line_width=2,color=colors[2])
         save(p)
         reset_output()
 
@@ -194,7 +194,7 @@ class Visualizer:
     def visualize_tabs(self, country):
         self.ind_start_infection = np.argmax(dataHandler.filterForCountry(country)["confirmed"]>=1)
         panels=[]
-        scales=[]    
+        scales=[]
         output_file('docs/_includes/plots/{}/all_caseshtm.html'.format(country), title="CORINNA 17- Cases Germany")
         for axis_type in ["linear", "log"]:
 
@@ -251,6 +251,7 @@ class Visualizer:
                                     "left": edges[:-1],
                                     "right": edges[1:]}) #dataframe hist for bokeh
             src = ColumnDataSource(hist_df)
+            p.line(t, y_data, legend_label="blusdfp", line_width=2)
             p.vbar(x=t, bottom=1, top=y_data, color="Blue", width=0.99, legend_label="Daily")
             p.line(t, y_data, legend_label="blusdfp", line_width=2)                         
 
@@ -274,7 +275,7 @@ class Visualizer:
             country)
         t = np.linspace(1, len(y_data["recovered"][self.ind_start_infection:]), len(
             y_data["recovered"][self.ind_start_infection:]))
-        
+
         data={
             'time':t,
             "date": [(datetime(2020, 1, 22)+timedelta(days=time)).strftime("%d.%m.%Y") for time in t],
@@ -282,7 +283,7 @@ class Visualizer:
             'Deaths':  y_data["deaths"][self.ind_start_infection:],
             'Recovered':  y_data["recovered"][self.ind_start_infection:]
                 }
-       
+
         p = figure(x_range=data["date"], title="Stacked Cases COVID-19 {}".format(country), plot_height=500, plot_width=1000,
                    tools=["pan,reset,wheel_zoom, tap"])
 
@@ -312,25 +313,17 @@ class Visualizer:
 
 dataHandler = DataHandler()
 
-model = SEIRModel({
-    # The parameter controlling how often a susceptible-infected contact results in a new exposure.
-    'beta': 0.2814924295824709,
-    # The rate an infected recovers and moves into the resistant phase.
-    'gamma': 0.3435135260650802,
-    # The rate at which an exposed person becomes infective.
-    'sigma': 19.963873286091008,
-    # The natural mortality rate (this is unrelated to disease). This models a population of a constant size,
-    'mu': 0,
-    'nu': 0,      # Ich glaube Immunrate. Wie viele Leute von sich aus Immun sind gegen COVID19
-    'dt': 0.1,
-    'S0': 83e6,
-    'E0': 0,
-    'I0': 44.68032504081025,
-    'Re0': 0,
-    # erstmal China studie # Quelle: Linton MN, Kobayashi T, Yang Y, Hayashi K, Akhmetzhanov RA, Jung S-m, et al. Incubation Period and Other Epidemiological Characteristics of 2019 Novel Coronavirus Infections with Right Truncation: A Statistical Analysis of Publicly Available Case Data. Journal of clinical medicine. 2020.
-    'darkrate': 0.05,
-    # WHO studie:  Novel Coronavirus (2019-nCoV). (PDF; 0,9 MB) Situation Report – 18. WHO, 7. Februar 2020, abgerufen am 8. Februar 2020.
-    'hardrate': 0.154,
-    'deathrate': 0.034
-})
+model = SEIRModel({'beta': 0.29100178032016055,  # The parameter controlling how often a susceptible-infected contact results in a new exposure.
+              'gamma': 0.35750346249699244,  # The rate an infected recovers and moves into the resistant phase.
+              'sigma': 19.953728174440972, # The rate at which an exposed person becomes infective.
+              'mu': 0,      # The natural mortality rate (this is unrelated to disease). This models a population of a constant size,
+              'nu': 0,      # Ich glaube Immunrate. Wie viele Leute von sich aus Immun sind gegen COVID19
+              'dt': 0.1,
+              'S0': 83e6,
+              'E0': 0,
+              'I0': 44.27080051547068,
+              'Re0': 0,
+              'darkrate': 0.05, # erstmal China studie # Quelle: Linton MN, Kobayashi T, Yang Y, Hayashi K, Akhmetzhanov RA, Jung S-m, et al. Incubation Period and Other Epidemiological Characteristics of 2019 Novel Coronavirus Infections with Right Truncation: A Statistical Analysis of Publicly Available Case Data. Journal of clinical medicine. 2020.
+              'hardrate': 0.154, # WHO studie:  Novel Coronavirus (2019-nCoV). (PDF; 0,9 MB) Situation Report – 18. WHO, 7. Februar 2020, abgerufen am 8. Februar 2020.
+              'deathrate': 0.034})
 Visualizer(dataHandler, model, steps=150, death_rate=0.02).visualize("Germany")
