@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 
 class SEIRModel:
-    def __init__(self, params):
+    def __init__(self, params, params2=None):
         self.params = params
+        self.params2 = params2
         self.series = pd.DataFrame({"S":[self.params['S0']],
                                     "E":[self.params['E0']],
                                     "I":[self.params['I0']],
@@ -12,46 +13,50 @@ class SEIRModel:
                                     "D":[self.params["I0"]*self.params["darkrate"]],
                                     "hard_course":[self.params["I0"]*self.params["darkrate"]*self.params["hardrate"]],
                                     "deadly_course":[self.params["I0"]*self.params["darkrate"]*self.params["deathrate"]]})
+        self.actual = None
 
-    def compute(self, days):
+    def set_actual(self,params):
+        self.actual = pd.Series({"S": self.actual.S + ( params['mu']*(self.actual.N-self.actual.S) - params['beta']*self.actual.I*self.actual.S/self.actual.N - params['nu']*self.actual.S )*self.params['dt'],
+                        "E": self.actual.E + ( params['beta']*self.actual.I*self.actual.S/self.actual.N - (params['mu']+params['sigma'])*self.actual.E ) * self.params['dt'],
+                        "I": self.actual.I + ( params['sigma']*self.actual.E - (params['mu']+params['gamma'])*self.actual.I ) * self.params['dt'],
+                        "R": self.actual.R + ( params['gamma']*self.actual.I - params['mu']*self.actual.R + params['nu']*self.actual.S) * self.params['dt'],
+                        "N": None ,
+                        "D": None,
+                        "hard_course": None,
+                        "deadly_course": None})
+        
+
+    def compute(self, days, with_action = False):
         #calculates the next $steps$ steps and gives back the whole series
-        actual = self.series.iloc[-1,:]
+        self.actual = self.series.iloc[-1,:]
+        
         for _ in range(days-1):
             for _ in range(round(1/self.params["dt"])):
-                actual = pd.Series({"S": actual.S + ( self.params['mu']*(actual.N-actual.S) - self.params['beta']*actual.I*actual.S/actual.N - self.params['nu']*actual.S )*self.params['dt'],
-                                        "E": actual.E + ( self.params['beta']*actual.I*actual.S/actual.N - (self.params['mu']+self.params['sigma'])*actual.E ) * self.params['dt'],
-                                        "I": actual.I + ( self.params['sigma']*actual.E - (self.params['mu']+self.params['gamma'])*actual.I ) * self.params['dt'],
-                                        "R": actual.R + ( self.params['gamma']*actual.I - self.params['mu']*actual.R + self.params['nu']*actual.S) * self.params['dt'],
-                                        "N": 0 ,
-                                        "D": 0,
-                                        "hard_course": 0,
-                                        "deadly_course": 0})
-
-                actual.N = actual.S + actual.E + actual.I + actual.R
-                actual.D = actual.I*self.params['darkrate']
-                actual.hard_course = actual.I*self.params['darkrate']*self.params['hardrate']
-                actual.deadly_course = actual.I*self.params['darkrate']*self.params['deathrate']
-            self.series = self.series.append(actual,ignore_index=True)
+                if with_action and self.params2['date_of_action']<=days:
+                    self.set_actual(self.params2)
+                else:
+                    self.set_actual(self.params)
+                
+                self.actual.N = self.actual.S + self.actual.E + self.actual.I + self.actual.R
+                self.actual.D = self.actual.I*self.params['darkrate']
+                self.actual.hard_course = self.actual.I*self.params['darkrate']*self.params['hardrate']
+                self.actual.deadly_course = self.actual.I*self.params['darkrate']*self.params['deathrate']
+            self.series = self.series.append(self.actual,ignore_index=True)
         return self.series
 
-    def compute_faster(self,days):
-        actual = self.series.iloc[-1,:]
+    def compute_faster(self,days,with_action=False):
+        self.actual = self.series.iloc[-1,:]
         for _ in range(days-1):
             for _ in range(round(1/self.params["dt"])):
-                actual = pd.Series({"S": actual.S + ( self.params['mu']*(actual.N-actual.S) - self.params['beta']*actual.I*actual.S/actual.N - self.params['nu']*actual.S )*self.params['dt'],
-                                        "E": actual.E + ( self.params['beta']*actual.I*actual.S/actual.N - (self.params['mu']+self.params['sigma'])*actual.E ) * self.params['dt'],
-                                        "I": actual.I + ( self.params['sigma']*actual.E - (self.params['mu']+self.params['gamma'])*actual.I ) * self.params['dt'],
-                                        "R": actual.R + ( self.params['gamma']*actual.I - self.params['mu']*actual.R + self.params['nu']*actual.S) * self.params['dt'],
-                                        "N": 0 ,
-                                        "D": 0,
-                                        "hard_course": 0,
-                                        "deadly_course": 0})
-
-                actual.N = actual.S + actual.E + actual.I + actual.R
-                actual.D = actual.I*self.params['darkrate']
+                if with_action and self.params2['date_of_action']<=days:
+                    self.set_actual(self.params2)
+                else:
+                    self.set_actual(self.params)
+                self.actual.N = self.actual.S + self.actual.E + self.actual.I + self.actual.R
+                self.actual.D = self.actual.I*self.params['darkrate']
                 #actual.hard_course = actual.I*self.params['darkrate']*self.params['hardrate']
                 #actual.deadly_course = actual.I*self.params['darkrate']*self.params['deathrate']
-            self.series = self.series.append(actual,ignore_index=True)
+            self.series = self.series.append(self.actual,ignore_index=True)
         return self.series
 
     def reset(self):
@@ -78,10 +83,16 @@ if __name__ == "__main__" :
                     'E0': 0,
                     'I0': 20,
                     'Re0': 0,
-                    'darkrate': 0.05, # erstmal China studie # Quelle: Linton MN, Kobayashi T, Yang Y, Hayashi K, Akhmetzhanov RA, Jung S-m, et al. Incubation Period and Other Epidemiological Characteristics of 2019 Novel Coronavirus Infections with Right Truncation: A Statistical Analysis of Publicly Available Case Data. Journal of clinical medicine. 2020.
+                    'darkrate': 0.10, # erstmal China studie # Quelle: Linton MN, Kobayashi T, Yang Y, Hayashi K, Akhmetzhanov RA, Jung S-m, et al. Incubation Period and Other Epidemiological Characteristics of 2019 Novel Coronavirus Infections with Right Truncation: A Statistical Analysis of Publicly Available Case Data. Journal of clinical medicine. 2020.
                     'hardrate': 0.154, # WHO studie:  Novel Coronavirus (2019-nCoV). (PDF; 0,9 MB) Situation Report – 18. WHO, 7. Februar 2020, abgerufen am 8. Februar 2020.
                     'deathrate': 0.034 # WHO :  Eröffnungsrede des WHO-Generaldirektors – Pressekonferenz zu COVID-19 – 3. März 2020. WHO, 3. März 2020, abgerufen am 6. März 2020 (englisch).
-                    })
+                    },
+                    {'date_of_action':30,
+                    'beta':0.6,
+                    'gamma':0.2,
+                    'sigma':0.5,
+                    'mu':0,
+                    'nu':0})
 
-    prediction = model.compute_faster(days=16)
+    prediction = model.compute(days=60,with_action=True)
     print(prediction)
