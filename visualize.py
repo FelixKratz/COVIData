@@ -57,8 +57,8 @@ class Visualizer:
        
         p = figure(x_range=data["date"], title="COVID-19-Cases {}. Including SEIR-Model".format(country), plot_height=500, plot_width=1000,
                    tools=["pan,reset,wheel_zoom, tap"])
-        p.line(t, self.detected[:len(t)], legend_label="SEIR-Model")
         p.xaxis.major_label_orientation = math.pi/3
+        p.line(t, self.detected[:len(t)], legend_label="SEIR-Model")
         renderers=p.vbar_stack(diff_types, x='time', width=0.9, color=colors, source=data,
              legend_label=diff_types)
         for renderer in renderers:
