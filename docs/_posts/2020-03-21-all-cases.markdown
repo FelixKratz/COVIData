@@ -9,6 +9,7 @@ categories: graphics recovered
 
 {% include plots/Germany/all_caseshtm.html %}
 {% include plots/Germany/stacked.html %}
-{% include plots/Germany/slider.html %}
+{% include plots/Germany/model_data.html %}
+{% include table/Germany/model_data.html %}
 
 
