@@ -23,47 +23,55 @@ class Visualizer:
         self.removed=self.cases["R"]*self.darkrate #nicht alle recorvered werden registriert evtl mehr als darkrate infected?
         self.recovered=self.removed*(1-death_rate) 
         self.deceased=self.removed*death_rate
+    ##dirty helper:
+    def __rm_doctype(self,country):
+        #folgender Code ist so dirty, da hilft noch nicht mal 30 sec. Händewaschen... AAber er entfernt immer den Doctype html
+        path = os.getcwd()+"/docs/_includes/plots/{}/".format(country)
+        htmlfiles = [os.path.join(path, file) for file in os.listdir(path) if file.endswith((".html", ".htm"))]
+        for file in htmlfiles:             
+            with open(file) as f_in:
+                w_o_doctype = f_in.read().splitlines(True)
+            with open(file, "w") as f_out:
+                f_out.writelines(w_o_doctype[5:])
+
+
+
     def visualize_tabs(self, country):
         self.ind_start_infection = np.argmax(dataHandler.filterForCountry(country)["confirmed"])
         pannels=[]    
         output_file('docs/_includes/plots/{}/all_caseshtm.html'.format(country), title="CORINNA 17- Cases Germany")
         for item in ["confirmed", "deaths", "recovered"]:
-
-            fig = figure(title="", plot_height=500, plot_width=500,
-                       tools=["pan,reset,wheel_zoom"])
-            
-            fig.xaxis.axis_label = 't/days'
-            fig.yaxis.axis_label = '# {} cases'.format(item)
             y_data = dataHandler.filterForCountry(country)[item]
             t = np.linspace(1, len(y_data), len(y_data))
             hist,edges=np.histogram(y_data,bins=len(t)) #numpy hist
             hist_df = pd.DataFrame({"cols": hist,
                                     "data": y_data,
-                                    "date": [datetime(2020,1,22)+timedelta(days=time) for time in t],
-                                    "time":t,
+                                    "date": [(datetime(2020,1,22)+timedelta(days=time)).strftime("%d.%m.%Y") for time in t],
+                                    "time": t,
                                     "left": edges[:-1],
                                     "right": edges[1:]}) #dataframe hist for bokeh
             src = ColumnDataSource(hist_df)
-            tooltips=[
-            ('Cases', '$y_data'),
-            ('Date', '@date'),
+        
+
+            Tooltips = [
+                ('Cases', '@data'),
+                ('Date', '@date'),
             ]
-            fig.vbar(x=hist_df["time"], bottom=0, top=hist_df["data"], color="Red", width=0.99, legend_label="cases per day", line_width=0.1)
-            fig.add_tools(HoverTool(tooltips=tooltips))
+            fig = figure(title="", plot_height=500, plot_width=500,
+                         tools=["pan,reset,wheel_zoom, hover, tap"], tooltips=Tooltips)
+            fig.xaxis.axis_label = 't/days'
+            fig.yaxis.axis_label = '# {} cases'.format(item)
+            fig.xaxis.major_label_overrides = dict(zip(hist_df.time, hist_df.date))
+            fig.vbar(x="time", bottom=0, top="data", color="Blue", width=0.99, legend_label="cases per day", line_width=0.1,source=src)
+            
+            
             if not os.path.exists("docs/_includes/plots/{}/".format(country)):
                  os.makedirs("docs/_includes/plots/{}/".format(country))
-
             
-
-            pannels.append(Panel(child=fig, title="{}".format(item)))
+            pannels.append(Panel(child=fig, title="{}".format(item))) #adds each pannel to tabs
         tabs=Tabs(tabs=pannels)
         save(tabs)
         
-        #folgender Code ist so dirty, da hilt noch nicht mal 30 sec. Händewaschen...
-        with open('docs/_includes/plots/{}/all_caseshtm.html'.format(country)) as f_in:
-            w_o_doctype = f_in.read().splitlines(True)
-        with open('docs/_includes/plots/{}/all_caseshtm.html'.format(country), "w") as f_out:
-            f_out.writelines(w_o_doctype[5:])
 
 
 
@@ -96,9 +104,43 @@ class Visualizer:
 
             save(p)
             reset_output()
+
+    def visualize_stacked(self, country):
+        output_file('docs/_includes/plots/{}/stacked.html'.format(country),
+                    title="COREA- Cases Germany")
+        diff_types = ["Confirmed", "Deaths", "Recovered"]
+        colors = ["#c9d9d3", "#718dbf", "#e84d60"]
+        y_data = dataHandler.filterForCountry(country)
+        t = np.linspace(1, len(y_data["recovered"]), len(y_data["recovered"]))
+        
+        data={
+            'time':t,
+            "date": [(datetime(2020, 1, 22)+timedelta(days=time)).strftime("%d.%m.%Y") for time in t],
+            'Confirmed':y_data["confirmed"],
+            'Deaths':  y_data["deaths"],
+            'Recovered':  y_data["recovered"]
+                }
+       
+        p = figure(x_range=data["date"], title="Stacked Cases COVID-19 {}".format(country), plot_height=500, plot_width=500,
+                   tools=["pan,reset,wheel_zoom, tap"])
+
+
+        renderers=p.vbar_stack(diff_types, x='time', width=0.9, color=colors, source=data,
+             legend_label=diff_types)
+        for renderer in renderers:
+            case_type=renderer.name
+            hover=HoverTool(tooltips=[
+                ("%s total" % case_type, "@%s" % case_type),
+                ('Date', '@date'),
+            ], renderers=[renderer])
+            p.add_tools(hover)
+        save(p)
+        reset_output()
     def visualize(self, country):
         self.visualize_simple(country)
         self.visualize_tabs(country)
+        self.visualize_stacked(country)
+        self.__rm_doctype(country)
 #####***************
 
 
