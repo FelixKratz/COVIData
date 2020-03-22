@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 #bokeh
 from bokeh.io import output_file
 from bokeh.embed import components
-from bokeh.plotting import figure, show, save, ColumnDataSource, reset_output, CDSView, GroupFilter
+from bokeh.plotting import figure, show, save, ColumnDataSource, reset_output
 from bokeh.layouts import row, column, gridplot
 from bokeh.models.widgets import Tabs, Panel
 from bokeh.models import  HoverTool, CustomJS, Slider
@@ -349,17 +349,6 @@ class Visualizer:
 
 dataHandler = DataHandler()
 
-model = SEIRModel({'beta': 0.49100178032016055,  # The parameter controlling how often a susceptible-infected contact results in a new exposure.
-              'gamma': 0.15750346249699244,  # The rate an infected recovers and moves into the resistant phase.
-              'sigma': 0.953728174440972, # The rate at which an exposed person becomes infective.
-              'mu': 0,      # The natural mortality rate (this is unrelated to disease). This models a population of a constant size,
-              'nu': 0,      # Ich glaube Immunrate. Wie viele Leute von sich aus Immun sind gegen COVID19
-              'dt': 0.1,
-              'S0': 83e6,
-              'E0': 0,
-              'I0': 44.27080051547068,
-              'Re0': 0,
-              'darkrate': 0.05, # erstmal China studie # Quelle: Linton MN, Kobayashi T, Yang Y, Hayashi K, Akhmetzhanov RA, Jung S-m, et al. Incubation Period and Other Epidemiological Characteristics of 2019 Novel Coronavirus Infections with Right Truncation: A Statistical Analysis of Publicly Available Case Data. Journal of clinical medicine. 2020.
-              'hardrate': 0.154, # WHO studie:  Novel Coronavirus (2019-nCoV). (PDF; 0,9 MB) Situation Report – 18. WHO, 7. Februar 2020, abgerufen am 8. Februar 2020.
-              'deathrate': 0.034})
+model = SEIRModel({'beta': 0.4458832735928616, 'gamma': 0.04142817668313051, 'sigma': 0.13654249480116884, 'mu': 0, 'nu': 0, 'dt': 0.1, 'S0': 83000000.0, 'E0': 0, 'I0': 46.53585481679889, 'Re0': 0, 'darkrate': 0.05, 'hardrate': 0.154, 'deathrate': 0.034}
+)
 Visualizer(dataHandler, model, steps=150, death_rate=0.02).visualize("Germany")
