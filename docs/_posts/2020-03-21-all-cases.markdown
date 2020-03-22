@@ -11,5 +11,5 @@ categories: graphics recovered
 {% include plots/Germany/stacked.html %}
 {% include plots/Germany/model_data.html %}
 {% include table/Germany/model_data.html %}
-
+{% include plots/Germany/model.html %}
 
