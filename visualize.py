@@ -7,11 +7,10 @@ from datetime import datetime, timedelta
 #bokeh
 from bokeh.io import output_file
 from bokeh.embed import components
-from bokeh.plotting import figure, show, save
+from bokeh.plotting import figure, show, save, ColumnDataSource, reset_output
 from bokeh.layouts import row, column, gridplot
 from bokeh.models.widgets import Tabs, Panel
-from bokeh.plotting import reset_output
-from bokeh.models import ColumnDataSource, HoverTool
+from bokeh.models import  HoverTool, CustomJS, Slider
 
 from dataHandler import DataHandler
 from SEIRmodel import SEIRModel
@@ -37,7 +36,34 @@ class Visualizer:
                 f_out.writelines(w_o_doctype[5:])
 
 
+    def visualilze_interactive(self, country):
+        print(country)
+        x = np.linspace(0, 10, 500)
+        y = np.sin(x)
+        source = ColumnDataSource(data=dict(x=x, y=y))
+        plot = figure(y_range=(-10, 10), plot_width=400, plot_height=400)
+        plot.line('x', 'y', source=source, line_width=3, line_alpha=0.6)
+        slider = Slider(start=0.1, end=10, value=1, step=.1, title="Amplitude")
+        callback = CustomJS(args=dict(source=source, amp=slider),
+                    code="""
+                    const data = source.data;
+                    const A = amp.value;
+                    const x = data['x']
+                    const y = data['y']
+                    for (var i = 0; i < x.length; i++) {
+                        y[i] = A*Math.sin(x[i]);
+                    }
+                    source.change.emit();
+        """)
 
+        slider.js_on_change('value', callback)
+
+        layout = row(
+        plot,
+        column(slider),
+        )
+        output_file('docs/_includes/plots/{}/slider.html'.format(country) , title="slider test")
+        save(layout)
     def visualize_tabs(self, country):
         self.ind_start_infection = np.argmax(dataHandler.filterForCountry(country)["confirmed"]>=1)
         panels=[]
@@ -68,16 +94,13 @@ class Visualizer:
                 fig.xaxis.major_label_orientation = math.pi/3
 
                 #fig.xaxis.major_label_overrides = dict(zip(hist_df.time, hist_df.date))
-                fig.vbar(x="time", bottom=0, top="data", color="Blue", width=0.99, legend_label="cases per day", line_width=0.1,source=src)
+                fig.vbar(x="time", bottom=1, top="data", color="Blue", width=0.99, legend_label="cases per day", line_width=0.1,source=src)
 
 
                 if not os.path.exists("docs/_includes/plots/{}/".format(country)):
                      os.makedirs("docs/_includes/plots/{}/".format(country))
 
-                panels.append(Panel(child=fig, title="{}".format(item))) #adds each pannel to tabs
-            tabs=Tabs(tabs=panels)
-            panels.append(Panel(child=fig, title=axis_type))
-
+                panels.append(Panel(child=fig, title="{}-{}".format(item, axis_type))) #adds each pannel to tabs
         tabs = Tabs(tabs=panels)
         save(tabs)
 
@@ -102,7 +125,7 @@ class Visualizer:
                                     "right": edges[1:]}) #dataframe hist for bokeh
             src = ColumnDataSource(hist_df)
             p.line(t, y_data, legend_label="blusdfp", line_width=2)                         
-            p.vbar(x=t, bottom=0, top=y_data, color="Blue", width=0.99, legend_label="Daily")
+            p.vbar(x=t, bottom=1, top=y_data, color="Blue", width=0.99, legend_label="Daily")
 
             if not os.path.exists("docs/_includes/plots/{}/".format(country)):
                  os.makedirs("docs/_includes/plots/{}/".format(country))
@@ -144,10 +167,12 @@ class Visualizer:
             p.add_tools(hover)
         save(p)
         reset_output()
+
     def visualize(self, country):
         self.visualize_simple(country)
         self.visualize_tabs(country)
         self.visualize_stacked(country)
+        self.visualilze_interactive(country)
         self.__rm_doctype(country)
 #####***************
 
