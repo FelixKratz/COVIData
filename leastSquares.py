@@ -26,7 +26,7 @@ def fitParamsToModel(reality, initialGuess, parametersToFit, actions=None):
     if actions != None and len(actions) > 0:
         withAction = True
     initialModel = SEIRModel(initialGuess, actions)
-    initialSim = initialModel.compute(days=len(reality), with_action = withAction).T[5]
+    initialSim = initialModel.compute(days=len(reality), with_action = withAction)['D']
     initialError = absoluteSquareError(initialSim, reality)
     F = squareErrorByElement(initialSim, reality)
     jacobian = np.zeros((len(parametersToFit), len(reality)))
@@ -39,7 +39,7 @@ def fitParamsToModel(reality, initialGuess, parametersToFit, actions=None):
             if (displacement[p] + DX * j > 0):
                 displacement[p] += DX * j
             displacedModel = SEIRModel(displacement, actions)
-            displacedSimulation = displacedModel.compute(days=len(reality), with_action = withAction).T[5]
+            displacedSimulation = displacedModel.compute(days=len(reality), with_action = withAction)['D']
             error[(j + 1) // 2] = squareErrorByElement(displacedSimulation, reality)
         jacobian[i] = (error[0] - error[1]) / (2* DX)
         i+=1
@@ -56,7 +56,7 @@ def fitParamsToModel(reality, initialGuess, parametersToFit, actions=None):
         i += 1
 
     finalModel = SEIRModel(initialGuess, actions)
-    finalSim = finalModel.compute(days=len(reality), with_action = withAction).T[5]
+    finalSim = finalModel.compute(days=len(reality), with_action = withAction)['D']
     finalError = absoluteSquareError(finalSim, reality)
 
     print("Initial Error: ", initialError)

@@ -49,7 +49,8 @@ class SEIRModel:
                 self.actual[5] = self.actual[2]*self.params['darkrate'] + self.actual[3]*self.params['darkrate']
 
             self.series.append(self.actual[:])
-        return np.array(self.series)
+        self.series = np.array(self.series)
+        return {"S": self.series.T[0], "E": self.series.T[1], "I": self.series.T[2], "R":  self.series.T[3], "N": self.series.T[4], "D": self.series.T[5], "deadly_course": self.series.T[3]*self.params['deathrate'], "hard_course": self.series.T[3]*self.params['hardrate']}
 
     def reset(self):
         # resets the series
@@ -77,7 +78,7 @@ if __name__ == "__main__" :
                        'nu':0}
                        ])
     #{'beta': 0.3920097374378698, 'gamma': 0.4658171977205657, 'sigma': 19.850638745563344, 'mu': 0, 'nu': 0, 'dt': 0.1, 'S0': 83000000.0, 'E0': 0, 'I0': 36.51139408522852, 'Re0': 0, 'darkrate': 0.05, 'hardrate': 0.154, 'deathrate': 0.034}
-    prediction = model.compute(days=70, with_action=False).T[5]
+    prediction = model.compute(days=70, with_action=False)['D']
     print(prediction)
     dataHandler = DataHandler()
     dataHandler.loadData()

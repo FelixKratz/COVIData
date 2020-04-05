@@ -18,12 +18,13 @@ from SEIRmodel import SEIRModel
 class Visualizer:
     def __init__(self, dataHandler, model, steps, death_rate):
         self.cases = model.compute(steps)
+        print(self.cases)
         dataHandler.loadData()
         self.darkrate =model.params["darkrate"]
         self.detected=self.cases["D"] #nur 5% der infizierten werden registriert
         print(self.detected)
         self.infected=self.cases["I"]
-        self.deceased=self.cases.deadly_course
+        self.deceased=self.cases["deadly_course"]
         self.recovered=self.cases["R"]- self.deceased
 
     ##dirty helper:
@@ -58,9 +59,9 @@ class Visualizer:
         p = figure(x_range=data["date"], title="COVID-19-Cases {}. Including SEIR-Model".format(country), plot_height=500, plot_width=1000,
                    tools=["pan,reset,wheel_zoom, tap"])
         p.xaxis.major_label_orientation = math.pi/3
-        p.line(t, self.detected[:len(t)], legend_label="SEIR-Model: Detected cases")
+        p.line(t, self.detected[:len(t)], name="SEIR-Model: Detected cases")
         renderers=p.vbar_stack(diff_types, x='time', width=0.9, color=colors, source=data,
-             legend_label=diff_types)
+             name=diff_types)
         for renderer in renderers:
             case_type=renderer.name
             hover=HoverTool(tooltips=[
@@ -94,12 +95,12 @@ class Visualizer:
                         'darkrate': 0.05,
                         'hardrate': 0.154,
                         'deathrate': 0.034
-                        },{'date_of_action':80,
+                        },[{'date_of_action':80,
                         'beta':0.6,
                         'gamma':0.2,
                         'sigma':0.5,
                         'mu':0,
-                        'nu':0})
+                        'nu':0}])
         model2 = SEIRModel({
                         'beta': 0.6,
                         'gamma': 0.2,
@@ -114,12 +115,12 @@ class Visualizer:
                         'darkrate': 0.05,
                         'hardrate': 0.154,
                         'deathrate': 0.034
-                        },{'date_of_action':80,
+                        },[{'date_of_action':80,
                         'beta':0.3,
                         'gamma':0.2,
                         'sigma':0.5,
                         'mu':0,
-                        'nu':0})
+                        'nu':0}])
         model3 = SEIRModel({
                         'beta': 0.6,
                         'gamma': 0.2,
@@ -134,12 +135,12 @@ class Visualizer:
                         'darkrate': 0.05,
                         'hardrate': 0.154,
                         'deathrate': 0.034
-                        },{'date_of_action':80,
+                        },[{'date_of_action':80,
                         'beta':0.8,
                         'gamma':0.2,
                         'sigma':0.5,
                         'mu':0,
-                        'nu':0})
+                        'nu':0}])
         pred1 = model1.compute(days=200,with_action=True)
         pred2 = model2.compute(days=200,with_action=True)
         pred3 = model3.compute(days=200,with_action=True)
@@ -157,9 +158,9 @@ class Visualizer:
         p.xaxis.major_label_orientation = math.pi/3
         p.xaxis.axis_label = 't/days'
         p.yaxis.axis_label = '# detected cases'
-        p.line(t, pred1.hard_course, legend_label="without action", line_width=2, color=colors[0])
-        p.line(t, pred2.hard_course, legend_label="positive action", line_width=2,color=colors[1])
-        p.line(t, pred3.hard_course, legend_label="negative action", line_width=2,color=colors[2])
+        p.line(t, pred1['hard_course'], name="without action", line_width=2, color=colors[0])
+        p.line(t, pred2['hard_course'], name="positive action", line_width=2,color=colors[1])
+        p.line(t, pred3['hard_course'], name="negative action", line_width=2,color=colors[2])
         save(p)
         reset_output()
 
@@ -221,7 +222,7 @@ class Visualizer:
                 fig.xaxis.major_label_orientation = math.pi/3
 
                 #fig.xaxis.major_label_overrides = dict(zip(hist_df.time, hist_df.date))
-                fig.vbar(x="time", bottom=0.01, top="data", color="Blue", width=0.99, legend_label="cases per day", line_width=0.1,source=src)
+                fig.vbar(x="time", bottom=0.01, top="data", color="Blue", width=0.99, name="cases per day", line_width=0.1,source=src)
 
 
                 if not os.path.exists("docs/_includes/plots/{}/".format(country)):
@@ -251,9 +252,9 @@ class Visualizer:
                                     "left": edges[:-1],
                                     "right": edges[1:]}) #dataframe hist for bokeh
             src = ColumnDataSource(hist_df)
-            hist=p.vbar(x=t, bottom=1, top=y_data, color="Blue", width=0.99, legend_label="Daily")
+            hist=p.vbar(x=t, bottom=1, top=y_data, color="Blue", width=0.99, name="Daily")
             hist.level="underlay"
-            line=p.line(t, y_data, legend_label="blusdfp", line_width=2)                         
+            line=p.line(t, y_data, name="blusdfp", line_width=2)
             line.level="overlay"
             if not os.path.exists("docs/_includes/plots/{}/".format(country)):
                  os.makedirs("docs/_includes/plots/{}/".format(country))
@@ -289,7 +290,7 @@ class Visualizer:
 
         p.xaxis.major_label_orientation = math.pi/3
         renderers=p.vbar_stack(diff_types, x='time', width=0.9, color=colors, source=data,
-             legend_label=diff_types)
+             name=diff_types)
         for renderer in renderers:
             case_type=renderer.name
             hover=HoverTool(tooltips=[
@@ -320,9 +321,9 @@ class Visualizer:
         p = figure(x_range=data["date"], title="COVID-19-Cases {}. Including SEIR-Model".format(country), plot_height=500, plot_width=1000,
                    tools=["pan,reset,wheel_zoom, tap"])
         p.xaxis.major_label_orientation = math.pi/3
-        p.line(t_model, self.detected, legend_label="SEIR-Model")
+        p.line(t_model, self.detected, name="SEIR-Model")
         renderers=p.vbar_stack(diff_types, x='time', width=0.9, color=colors, source=data,
-             legend_label=diff_types)
+             name=diff_types)
         for renderer in renderers:
             case_type=renderer.name
             hover=HoverTool(tooltips=[
