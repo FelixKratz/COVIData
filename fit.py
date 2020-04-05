@@ -1,6 +1,9 @@
 from dataHandler import DataHandler
 from leastSquares import *
 from SEIRmodel import SEIRModel
+import sys
+
+sys.setrecursionlimit(int(1e8))
 
 dataHandler = DataHandler()
 dataHandler.loadData()
@@ -8,17 +11,18 @@ dataHandler.loadData()
 germanData = dataHandler.filterForCountry("Germany")
 
 fitParamsToModel(germanData['confirmed'][4:],
-                 initialGuess={'beta': 0.29100178032016055,  # The parameter controlling how often a susceptible-infected contact results in a new exposure.
-                               'gamma': 0.35750346249699244,  # The rate an infected recovers and moves into the resistant phase.
-                               'sigma': 19.953728174440972, # The rate at which an exposed person becomes infective.
-                               'mu': 0,      # The natural mortality rate (this is unrelated to disease). This models a population of a constant size,
-                               'nu': 0,      # Ich glaube Immunrate. Wie viele Leute von sich aus Immun sind gegen COVID19
-                               'dt': 0.1,
-                               'S0': 83e6,
-                               'E0': 0,
-                               'I0': 44.27080051547068,
-                               'Re0': 0,
-                               'darkrate': 0.05, # erstmal China studie # Quelle: Linton MN, Kobayashi T, Yang Y, Hayashi K, Akhmetzhanov RA, Jung S-m, et al. Incubation Period and Other Epidemiological Characteristics of 2019 Novel Coronavirus Infections with Right Truncation: A Statistical Analysis of Publicly Available Case Data. Journal of clinical medicine. 2020.
-                               'hardrate': 0.154, # WHO studie:  Novel Coronavirus (2019-nCoV). (PDF; 0,9 MB) Situation Report – 18. WHO, 7. Februar 2020, abgerufen am 8. Februar 2020.
-                               'deathrate': 0.034},
+                 initialGuess={'beta': 2.6611534876710494, 'gamma': 1.1193829408556317, 'sigma': 0.14324823943299667, 'mu': 0, 'nu': 0, 'dt': 0.1, 'S0': 83000000.0, 'E0': 0, 'I0': 21.018772332969615, 'Re0': 0, 'darkrate': 0.05, 'hardrate': 0.154, 'deathrate': 0.034},
                   parametersToFit=['beta', 'gamma', 'sigma', 'I0'])
+# actions=[{'date_of_action':54,
+# 'beta':0.58,
+# 'gamma':0.7835539610885016,
+# 'sigma':19.559902079217732,
+# 'mu':0,
+# 'nu':0},
+# {'date_of_action':62,
+# 'beta':0.5,
+# 'gamma':0.7835539610885016,
+# 'sigma':19.559902079217732,
+# 'mu':0,
+# 'nu':0}
+# ],

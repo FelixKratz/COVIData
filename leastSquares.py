@@ -20,11 +20,13 @@ def squareErrorByElement(simulation, reality):
 
     return (np.log(simulation) - np.log(reality))**2
 
-def fitParamsToModel(reality, initialGuess, parametersToFit):
+def fitParamsToModel(reality, initialGuess, parametersToFit, actions=None):
     DX = 1e-3
-
-    initialModel = SEIRModel(initialGuess)
-    initialSim = initialModel.compute_faster(days=len(reality))['D'].to_numpy()
+    withAction = False
+    if actions != None and len(actions) > 0:
+        withAction = True
+    initialModel = SEIRModel(initialGuess, actions)
+    initialSim = initialModel.compute(days=len(reality), with_action = withAction).T[5]
     initialError = absoluteSquareError(initialSim, reality)
     F = squareErrorByElement(initialSim, reality)
     jacobian = np.zeros((len(parametersToFit), len(reality)))
@@ -34,9 +36,10 @@ def fitParamsToModel(reality, initialGuess, parametersToFit):
         error = [[], []]
         for j in [-1, 1]:
             displacement = initialGuess
-            displacement[p] += DX * j
-            displacedModel = SEIRModel(displacement)
-            displacedSimulation = displacedModel.compute_faster(days=len(reality))['D'].to_numpy()
+            if (displacement[p] + DX * j > 0):
+                displacement[p] += DX * j
+            displacedModel = SEIRModel(displacement, actions)
+            displacedSimulation = displacedModel.compute(days=len(reality), with_action = withAction).T[5]
             error[(j + 1) // 2] = squareErrorByElement(displacedSimulation, reality)
         jacobian[i] = (error[0] - error[1]) / (2* DX)
         i+=1
@@ -52,14 +55,14 @@ def fitParamsToModel(reality, initialGuess, parametersToFit):
             initialGuess[p] = 0
         i += 1
 
-    finalModel = SEIRModel(initialGuess)
-    finalSim = finalModel.compute_faster(days=len(reality))['D'].to_numpy()
+    finalModel = SEIRModel(initialGuess, actions)
+    finalSim = finalModel.compute(days=len(reality), with_action = withAction).T[5]
     finalError = absoluteSquareError(finalSim, reality)
 
     print("Initial Error: ", initialError)
     print("Final Error: ", finalError)
     print("Parameter: ", initialGuess)
     if not finalError < 1e-8:
-        fitParamsToModel(reality, initialGuess, parametersToFit)
+        fitParamsToModel(reality, initialGuess, parametersToFit, actions=actions)
     else:
         print("Final Params: ", initialGuess)

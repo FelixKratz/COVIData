@@ -1,113 +1,95 @@
 import numpy as np
 import pandas as pd
+from dataHandler import DataHandler
+import matplotlib.pyplot as plt
 
 class SEIRModel:
-    def __init__(self, params, params2=None):
+    def __init__(self, params, actions=None):
         self.params = params
-        self.params2 = params2
-        self.series = pd.DataFrame({"S":[self.params['S0']],
-                                    "E":[self.params['E0']],
-                                    "I":[self.params['I0']],
-                                    "R":[self.params['Re0']],
-                                    "N":[self.params['S0']+self.params['E0']+self.params['I0']+self.params['Re0']],
-                                    "D":[self.params["I0"]*self.params["darkrate"]],
-                                    "hard_course":[self.params["I0"]*self.params["darkrate"]*self.params["hardrate"]],
-                                    "deadly_course":[self.params["I0"]*self.params["darkrate"]*self.params["deathrate"]]})
-        self.actual = None
-
-    def set_actual(self,params):
-        self.actual = pd.Series({"S": self.actual.S + ( params['mu']*(self.actual.N-self.actual.S) - params['beta']*self.actual.I*self.actual.S/self.actual.N - params['nu']*self.actual.S )*self.params['dt'],
-                        "E": self.actual.E + ( params['beta']*self.actual.I*self.actual.S/self.actual.N - (params['mu']+params['sigma'])*self.actual.E ) * self.params['dt'],
-                        "I": self.actual.I + ( params['sigma']*self.actual.E - (params['mu']+params['gamma'])*self.actual.I ) * self.params['dt'],
-                        "R": self.actual.R + ( params['gamma']*self.actual.I - params['mu']*self.actual.R + params['nu']*self.actual.S) * self.params['dt'],
-                        "N": None ,
-                        "D": None,
-                        "hard_course": None,
-                        "deadly_course": None})
-
+        self.actual = []
+        self.actions = actions
+        self.series = []
+        self.reset()
 
     def compute(self, days, with_action = False):
-        #calculates the next $steps$ steps and gives back the whole series
-        self.actual = self.series.iloc[-1,:]
-
         for i in range(days-1):
             for _ in range(round(1/self.params["dt"])):
-                if with_action and self.params2['date_of_action']<=i:
-                    self.set_actual(self.params2)
-                else:
-                    self.set_actual(self.params)
+                params = []
+                actionTriggered = False
+                if with_action:
+                    j = 0
+                    actionIndex = -1
+                    for k in range(len(self.actions)):
+                        j_tmp = self.actions[k]['date_of_action']
+                        if i >= j_tmp and j_tmp > j:
+                            j = j_tmp
+                            actionIndex = k
 
-                self.actual.N = self.actual.S + self.actual.E + self.actual.I + self.actual.R
-                self.actual.D = self.actual.I*self.params['darkrate'] + self.actual.R*self.params['darkrate']
-                self.actual.hard_course = self.actual.I*self.params['darkrate']*self.params['hardrate']
-                self.actual.deadly_course = self.actual.R*self.params['darkrate']*self.params['deathrate']
-            self.series = self.series.append(self.actual,ignore_index=True)
-        return self.series
+                    if (actionIndex >= 0):
+                        params = self.actions[actionIndex]
+                        actionTriggered = True
 
-    def compute_faster(self,days,with_action=False):
-        self.actual = self.series.iloc[-1,:]
-        for _ in range(days-1):
-            for _ in range(round(1/self.params["dt"])):
-                if with_action and self.params2['date_of_action']<=days:
-                    self.set_actual(self.params2)
-                else:
-                    self.set_actual(self.params)
-                self.actual.N = self.actual.S + self.actual.E + self.actual.I + self.actual.R
-                self.actual.D = self.actual.I*self.params['darkrate'] + self.actual.R*self.params['darkrate']
-                #
-                #
-            self.series = self.series.append(self.actual,ignore_index=True)
-        return self.series
+                if not actionTriggered:
+                    params = self.params
+
+                # 0 = S; 1 = E; 2 = I; 3 = R; 4 = N; 5 = (D)etected
+                self.actual[0] = self.actual[0] + ( params['mu']*(self.actual[4]-self.actual[0])
+                                - params['beta']*self.actual[2]*self.actual[0]/self.actual[4]
+                                - params['nu']*self.actual[0] )*self.params['dt']
+                self.actual[1] = self.actual[1] + ( params['beta']*self.actual[2]*self.actual[0]/self.actual[4]
+                                - (params['mu']+params['sigma'])*self.actual[1] ) * self.params['dt']
+
+                self.actual[2] = self.actual[2] + ( params['sigma']*self.actual[1]
+                                - (params['mu']+params['gamma'])*self.actual[2] ) * self.params['dt']
+
+                self.actual[3] = self.actual[3] + ( params['gamma']*self.actual[2] - params['mu']*self.actual[3]
+                                + params['nu']*self.actual[0]) * self.params['dt']
+
+                self.actual[4] = self.actual[0] + self.actual[1] + self.actual[2] + self.actual[3]
+                self.actual[5] = self.actual[2]*self.params['darkrate'] + self.actual[3]*self.params['darkrate']
+
+            self.series.append(self.actual[:])
+        return np.array(self.series)
 
     def reset(self):
         # resets the series
-        self.series =  pd.DataFrame({"S":[self.params['S0']],
-                                    "E":[self.params['E0']],
-                                    "I":[self.params['I0']],
-                                    "R":[self.params['Re0']],
-                                    "N":[self.params['S0']+self.params['E0']+self.params['I0']+self.params['Re0']],
-                                    "D":[self.params["I0"]*self.params["darkrate"]],
-                                    "hard_course":[self.params["I0"]*self.params["hardrate"]],
-                                    "deadly_course":[self.params["I0"]*self.params["deathrate"]]})
-
-    def get_daily_numbers(self):
-        steps_per_day = 1/self.params["dt"]
-        data = pd.DataFrame({"S": [self.params['S0']], "E": [self.params['E0']], "I": [self.params['I0']], "R": [self.params['Re0']], "N": [
-                            self.params['S0']+self.params['E0']+self.params['I0']+self.params['Re0']], "D": [self.params["I0"]*self.params["darkrate"]]})
-        data = pd.DataFrame({"S": [self.params['S0']],
-                             "E": [self.params['E0']],
-                             "I": [self.params['I0']],
-                             "R": [self.params['Re0']],
-                             "N": [self.params['S0']+self.params['E0']+self.params['I0']+self.params['Re0']],
-                             "D": [self.params["I0"]*self.params["darkrate"]],
-                             "hard_course": [self.params["I0"]*self.params["darkrate"]*self.params["hardrate"]],
-                             "deadly_course": [self.params["I0"]*self.params["darkrate"]*self.params["deathrate"]]})
-        i = round(steps_per_day)
-        while i < self.series.shape[0]:
-            data = data.append(self.series.iloc[i, :], ignore_index=True)
-            i = round(i + steps_per_day)
-        return data
+        self.actual = [self.params['S0'],
+                       self.params['E0'],
+                       self.params['I0'],
+                       self.params['Re0'],
+                       self.params['S0']+self.params['E0']+self.params['I0']+self.params['Re0'],
+                       (self.params["I0"] + self.params['Re0'])*self.params["darkrate"]]
+        self.series = [self.actual[:]]
 
 if __name__ == "__main__" :
-    model = SEIRModel({'beta': 0.29100178032016055,  # The parameter controlling how often a susceptible-infected contact results in a new exposure.
-                  'gamma': 0.35750346249699244,  # The rate an infected recovers and moves into the resistant phase.
-                  'sigma': 19.953728174440972, # The rate at which an exposed person becomes infective.
-                  'mu': 0,      # The natural mortality rate (this is unrelated to disease). This models a population of a constant size,
-                  'nu': 0,      # Ich glaube Immunrate. Wie viele Leute von sich aus Immun sind gegen COVID19
-                  'dt': 0.1,
-                  'S0': 83e6,
-                  'E0': 0,
-                  'I0': 44.27080051547068,
-                  'Re0': 0,
-                  'darkrate': 0.05, # erstmal China studie # Quelle: Linton MN, Kobayashi T, Yang Y, Hayashi K, Akhmetzhanov RA, Jung S-m, et al. Incubation Period and Other Epidemiological Characteristics of 2019 Novel Coronavirus Infections with Right Truncation: A Statistical Analysis of Publicly Available Case Data. Journal of clinical medicine. 2020.
-                  'hardrate': 0.154, # WHO studie:  Novel Coronavirus (2019-nCoV). (PDF; 0,9 MB) Situation Report – 18. WHO, 7. Februar 2020, abgerufen am 8. Februar 2020.
-                  'deathrate': 0.034},
-                       {'date_of_action':30,
-                       'beta':0.6,
-                       'gamma':0.2,
-                       'sigma':0.5,
+    model = SEIRModel({'beta': 2.6611534876710494, 'gamma': 1.1193829408556317, 'sigma': 0.14324823943299667, 'mu': 0, 'nu': 0, 'dt': 0.1, 'S0': 83000000.0, 'E0': 0, 'I0': 21.018772332969615, 'Re0': 0, 'darkrate': 0.05, 'hardrate': 0.154, 'deathrate': 0.034},
+                       [{'date_of_action':54,
+                       'beta':0.58,
+                       'gamma':0.7835539610885016,
+                       'sigma':19.559902079217732,
                        'mu':0,
-                       'nu':0})
-
-    prediction = model.compute(days=120,with_action=True)
+                       'nu':0},
+                       {'date_of_action':62,
+                       'beta':0.5,
+                       'gamma':0.7835539610885016,
+                       'sigma':19.559902079217732,
+                       'mu':0,
+                       'nu':0}
+                       ])
+    #{'beta': 0.3920097374378698, 'gamma': 0.4658171977205657, 'sigma': 19.850638745563344, 'mu': 0, 'nu': 0, 'dt': 0.1, 'S0': 83000000.0, 'E0': 0, 'I0': 36.51139408522852, 'Re0': 0, 'darkrate': 0.05, 'hardrate': 0.154, 'deathrate': 0.034}
+    prediction = model.compute(days=70, with_action=False).T[5]
     print(prediction)
+    dataHandler = DataHandler()
+    dataHandler.loadData()
+
+    germanData = dataHandler.filterForCountry("Germany")
+    germanData = germanData['confirmed'][4:]
+    print(germanData)
+    x = np.linspace(1, len(prediction), len(prediction))
+    plt.plot(x, prediction,"b.", label="Prediction")
+    x2 = np.linspace(1, len(germanData), len(germanData))
+    plt.plot(x2, germanData, "r.", label="Data")
+    #plt.yscale("log")
+    #plt.ylim(-100, 100)
+    plt.legend(loc="best")
+    plt.show()
