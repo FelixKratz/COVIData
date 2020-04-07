@@ -309,10 +309,10 @@ class Visualizer:
         y_data = dataHandler.filterForCountry(country)
         t_data = np.linspace(1, len(y_data["recovered"][self.ind_start_infection:]), len(
             y_data["recovered"][self.ind_start_infection:]))
-        t_model=np.linspace(1,len(self.detected), len(self.detected))
+        t_model=np.linspace(1,120, 120)
         data={
             'time':t_model,
-            "date": [(datetime(2020, 1, 22)+timedelta(days=time)).strftime("%d.%m.%Y") for time in t_model],
+            "date": [(datetime(2020, 2, 21)+timedelta(days=time)).strftime("%d.%m.%Y") for time in t_model],
             'Confirmed': np.append(y_data["confirmed"][self.ind_start_infection:],([0]*(len(t_model)-len(t_data)))),
             'Deaths':  np.append(y_data["deaths"][self.ind_start_infection:],([0]*(len(t_model)-len(t_data)))),
             'Recovered':  np.append(y_data["recovered"][self.ind_start_infection:],([0]*(len(t_model)-len(t_data))))
