@@ -309,7 +309,7 @@ class Visualizer:
         y_data = dataHandler.filterForCountry(country)
         t_data = np.linspace(1, len(y_data["recovered"][self.ind_start_infection:]), len(
             y_data["recovered"][self.ind_start_infection:]))
-        t_model=np.linspace(1,len(self.detected), len(self.detected))
+        t_model=np.linspace(30,len(self.detected) - 29, len(self.detected) - 29)
         data={
             'time':t_model,
             "date": [(datetime(2020, 1, 22)+timedelta(days=time)).strftime("%d.%m.%Y") for time in t_model],
@@ -350,6 +350,6 @@ class Visualizer:
 
 dataHandler = DataHandler()
 
-model = SEIRModel({'beta': 0.4458832735928616, 'gamma': 0.04142817668313051, 'sigma': 0.13654249480116884, 'mu': 0, 'nu': 0, 'dt': 0.1, 'S0': 83000000.0, 'E0': 0, 'I0': 46.53585481679889, 'Re0': 0, 'darkrate': 0.05, 'hardrate': 0.154, 'deathrate': 0.034}
+model = SEIRModel({'beta': 642.3430438150659, 'gamma': 3.5462661166540026, 'sigma': 0.0016878787803937588, 'mu': 0, 'nu': 0, 'dt': 0.1, 'S0': 83000000.0, 'E0': 0, 'I0': 249.0634121560787, 'Re0': 0, 'darkrate': 0.05, 'hardrate': 0.154, 'deathrate': 0.034}
 )
 Visualizer(dataHandler, model, steps=100, death_rate=0.02).visualize("Germany")

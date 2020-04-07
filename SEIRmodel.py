@@ -63,7 +63,7 @@ class SEIRModel:
         self.series = [self.actual[:]]
 
 if __name__ == "__main__" :
-    model = SEIRModel({'beta': 2.6611534876710494, 'gamma': 1.1193829408556317, 'sigma': 0.14324823943299667, 'mu': 0, 'nu': 0, 'dt': 0.1, 'S0': 83000000.0, 'E0': 0, 'I0': 21.018772332969615, 'Re0': 0, 'darkrate': 0.05, 'hardrate': 0.154, 'deathrate': 0.034},
+    model = SEIRModel({'beta': 642.3430438150659, 'gamma': 3.5462661166540026, 'sigma': 0.0016878787803937588, 'mu': 0, 'nu': 0, 'dt': 0.1, 'S0': 83000000.0, 'E0': 0, 'I0': 249.0634121560787, 'Re0': 0, 'darkrate': 0.05, 'hardrate': 0.154, 'deathrate': 0.034},
                        [{'date_of_action':54,
                        'beta':0.58,
                        'gamma':0.7835539610885016,
@@ -78,19 +78,19 @@ if __name__ == "__main__" :
                        'nu':0}
                        ])
     #{'beta': 0.3920097374378698, 'gamma': 0.4658171977205657, 'sigma': 19.850638745563344, 'mu': 0, 'nu': 0, 'dt': 0.1, 'S0': 83000000.0, 'E0': 0, 'I0': 36.51139408522852, 'Re0': 0, 'darkrate': 0.05, 'hardrate': 0.154, 'deathrate': 0.034}
-    prediction = model.compute(days=70, with_action=False)['D']
+    prediction = model.compute(days=50, with_action=False)['D']
     print(prediction)
     dataHandler = DataHandler()
     dataHandler.loadData()
 
     germanData = dataHandler.filterForCountry("Germany")
-    germanData = germanData['confirmed'][4:]
+    germanData = germanData['confirmed'][30:]
     print(germanData)
     x = np.linspace(1, len(prediction), len(prediction))
     plt.plot(x, prediction,"b.", label="Prediction")
     x2 = np.linspace(1, len(germanData), len(germanData))
     plt.plot(x2, germanData, "r.", label="Data")
-    #plt.yscale("log")
+    plt.yscale("log")
     #plt.ylim(-100, 100)
     plt.legend(loc="best")
     plt.show()
