@@ -309,7 +309,7 @@ class Visualizer:
         y_data = dataHandler.filterForCountry(country)
         t_data = np.linspace(1, len(y_data["recovered"][self.ind_start_infection:]), len(
             y_data["recovered"][self.ind_start_infection:]))
-        t_model=np.linspace(30,len(self.detected) - 29, len(self.detected) - 29)
+        t_model=np.linspace(1,len(self.detected), len(self.detected))
         data={
             'time':t_model,
             "date": [(datetime(2020, 1, 22)+timedelta(days=time)).strftime("%d.%m.%Y") for time in t_model],
